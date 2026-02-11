@@ -8,7 +8,7 @@ interface InventoryContract {
     data class State(
         val isLoading: Boolean = false,
         val products: List<Product> = emptyList(),
-        val error: String? = null
+        val errorMessage: String? = null
     )
 
     // Kullanıcının yapabileceği hareketler (Events / Intents)
@@ -16,5 +16,9 @@ interface InventoryContract {
         data object LoadProducts : Event
         data class AddProduct(val product: Product) : Event
         data class DeleteProduct(val product: Product) : Event
+    }
+
+    sealed class SideEffect {
+        object ProductAdded : SideEffect() // Ürün başarıyla eklendi sinyali
     }
 }
