@@ -64,5 +64,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-    implementation(project(":feature:inventory")) // Modül ismin neyse onu yaz (örn. :feature:inventory)
+    // Hilt Navigation
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(project(":core:navigation"))
+
+    runtimeOnly(project(":feature:inventory"))
 }
