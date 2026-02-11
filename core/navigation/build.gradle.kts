@@ -1,14 +1,12 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.google.dagger.hilt.android)
-    alias(libs.plugins.kotlin.compose) // Bu plugin Kotlin 2.0+ için ŞART
     alias(libs.plugins.kotlin.serialization)
+
 }
 
 android {
-    namespace = "com.refoodio.inventory"
+    namespace = "com.refoodio.core.navigation"
     compileSdk {
         version = release(36)
     }
@@ -36,7 +34,6 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-
 }
 
 dependencies {
@@ -47,34 +44,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-
-    implementation(project(":core"))
-    ksp(libs.androidx.room.compiler)
-
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-
-    // Compose
-    val composeBom = platform(libs.androidx.compose.bom)
-    implementation(composeBom)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-
-    // Lifecycle
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.kotlinx.serialization.json)
 
     // Hilt Navigation
     implementation(libs.androidx.hilt.navigation.compose)
-
-    // Modül ismin neyse onu yaz
-    implementation(project(":core:navigation"))
-
-
-    // Coroutine testleri için şart
-    testImplementation(libs.kotlinx.coroutines.test) // Unit testler için
-    androidTestImplementation(libs.kotlinx.coroutines.test) // Android (Room) testleri için
 }
