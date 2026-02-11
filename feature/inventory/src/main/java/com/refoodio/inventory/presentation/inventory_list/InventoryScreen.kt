@@ -14,13 +14,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.refoodio.inventory.domain.model.Product
+import com.refoodio.inventory.presentation.inventory_list.components.AddProductDialog
 import kotlin.random.Random
 
 import com.refoodio.inventory.presentation.inventory_list.components.ProductItem
@@ -31,18 +36,39 @@ fun InventoryScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // 1. Diyaloğun görünürlüğünü kontrol eden yerel state
+    var isDialogOpen by remember { mutableStateOf(false) }
+
+    // 🕒 Side Effect Dinleyici
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is InventoryContract.SideEffect.ProductAdded -> {
+                    isDialogOpen = false // Sinyal gelince diyaloğu kapat!
+                }
+            }
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                // Test için ürün ekleme
-                viewModel.handleEvent(InventoryContract.Event.AddProduct(
-                    Product(name = viewModel.mockProducts.random(),
-                        expiryDate = System.currentTimeMillis(),
-                        quantity = Random.nextDouble(1.0, 10.0)
-                )))
-            }) { Icon(Icons.Default.Add, contentDescription = "Ekle") }
+            FloatingActionButton(onClick = { isDialogOpen = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Ekle")
+            }
         }
     ) { padding ->
+
+        if (isDialogOpen) {
+            AddProductDialog(
+                state = state,
+                onEvent = { event ->
+                    viewModel.handleEvent(event)
+                    // Not: Eğer event başarılıysa diyaloğu kapatma mantığını
+                    // birazdan SideEffect ile ekleyeceğiz.
+                },
+                onDismiss = { isDialogOpen = false }
+            )
+        }
         if (state.products.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("Mutfak boş, haydi alışverişe! 🛒")
