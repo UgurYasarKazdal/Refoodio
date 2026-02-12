@@ -72,6 +72,7 @@ dependencies {
 
     // Modül ismin neyse onu yaz
     implementation(project(":core:navigation"))
+    implementation(project(":core:ui"))
 
 
     // Coroutine testleri için şart
