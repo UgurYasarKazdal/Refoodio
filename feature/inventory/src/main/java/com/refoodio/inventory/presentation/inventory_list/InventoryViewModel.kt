@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.refoodio.core.util.Resource
+import com.refoodio.core.util.UiText
 import com.refoodio.inventory.R
 import com.refoodio.inventory.domain.model.Product
 import com.refoodio.inventory.domain.use_case.InventoryUseCases
@@ -38,6 +39,16 @@ class InventoryViewModel @Inject constructor(
             is InventoryContract.Event.AddProduct -> addProduct(event.product)
             is InventoryContract.Event.DeleteProduct -> deleteProduct(event.product)
             is InventoryContract.Event.LoadProducts -> loadProducts()
+            is InventoryContract.Event.ShowAddProductDialog -> _state.update {
+                it.copy(
+                    isAddProductDialogOpen = true
+                )
+            }
+            is InventoryContract.Event.DismissAddProductDialog -> _state.update {
+                it.copy(
+                    isAddProductDialogOpen = false
+                )
+            }
         }
     }
 
@@ -93,10 +104,10 @@ class InventoryViewModel @Inject constructor(
 
                 is Resource.Error -> {
                     // UiText'i burada gerçek String'e dönüştürüyoruz.
-                    val errorMessage =
-                        result.message?.asString(app) // app, Application Context'idir.
-                    // Bu errorMessage'i bir Snackbar, Toast veya UI state'i ile gösterin.
-                    _state.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+                    val errorMessage = result.message
+                        ?: UiText.StringResource(R.string.error_unknown) // Bu errorMessage'i bir Snackbar, Toast veya UI state'i ile gösterin.
+                    _state.update { it.copy(isLoading = false) }
+                    _effect.send(InventoryContract.SideEffect.ShowSnackbar(errorMessage))
                 }
             }
         }.launchIn(viewModelScope)
@@ -115,11 +126,11 @@ class InventoryViewModel @Inject constructor(
                 is Resource.Success -> {
                     // Yükleme durumunu kapat. Başarı mesajı için bir SideEffect gönderilebilir.
                     _state.update { it.copy(isLoading = false) }
-                    /*                    _effect.send(
-                                            InventoryContract.SideEffect.ShowSnackbar(
-                                                UiText.StringResource(R.string.product_deleted_successfully)
-                                            )
-                                        )*/
+                    _effect.send(
+                        InventoryContract.SideEffect.ShowSnackbar(
+                            UiText.StringResource(R.string.product_deleted_successfully)
+                        )
+                    )
                 }
 
                 is Resource.Error -> {
