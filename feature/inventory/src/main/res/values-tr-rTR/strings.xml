@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_product_name_cant_be_empty">Ürün adı boş olamaz!</string>
+    <string name="error_quantity_must_be_greater_than_zero">Miktar 0\'dan büyük olmalı!</string>
+    <string name="error_invalid_product">Geçersiz ürün</string>
+    <string name="error_unknown">Bilinmeyen hata</string>
+</resources>
