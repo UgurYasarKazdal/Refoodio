@@ -1,11 +1,11 @@
 package com.refoodio.inventory
 
-import com.refoodio.inventory.domain.model.Product
+import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.inventory.domain.repository.FakeInventoryRepository
-import com.refoodio.inventory.domain.use_case.DeleteProductUseCase
-import com.refoodio.inventory.domain.use_case.GetProductsUseCase
-import com.refoodio.inventory.domain.use_case.InsertProductUseCase
-import com.refoodio.inventory.domain.use_case.InventoryUseCases
+import com.refoodio.core.domain.use_case.inventory.DeleteProductUseCase
+import com.refoodio.core.domain.use_case.inventory.GetProductsUseCase
+import com.refoodio.core.domain.use_case.inventory.InsertProductUseCase
+import com.refoodio.core.domain.use_case.inventory.InventoryUseCases
 import com.refoodio.inventory.presentation.inventory_list.InventoryContract
 import com.refoodio.inventory.presentation.inventory_list.InventoryViewModel
 import junit.framework.TestCase.assertEquals
@@ -51,7 +51,7 @@ class InventoryViewModelTest {
     @Test
     fun `AddProduct event with empty name should update state with error`() = runTest {
         // GİRDİ: Boş isimli bir ürün ekleme isteği
-        val invalidProduct = Product(name = "", quantity = 1.0, expiryDate = 0L)
+        val invalidProduct = InventoryItem(name = "", quantity = 1.0, expiryDate = 0L)
         
         viewModel.handleEvent(InventoryContract.Event.AddProduct(invalidProduct))
 
@@ -68,7 +68,7 @@ class InventoryViewModelTest {
     @Test
     fun `AddProduct event with zero or negative quantity should update state with error`() = runTest {
         // 1. GİRDİ: Miktar 0 veya negatif
-        val invalidProduct = Product(name = "Elma", quantity = 0.0, expiryDate = 0L)
+        val invalidProduct = InventoryItem(name = "Elma", quantity = 0.0, expiryDate = 0L)
 
         // 2. İŞLEM
         viewModel.handleEvent(InventoryContract.Event.AddProduct(invalidProduct))

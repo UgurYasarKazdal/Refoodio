@@ -3,11 +3,12 @@ package com.refoodio.inventory.presentation.inventory_list
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.refoodio.core.util.Resource
-import com.refoodio.core.util.UiText
 import com.refoodio.inventory.R
-import com.refoodio.inventory.domain.model.Product
-import com.refoodio.inventory.domain.use_case.InventoryUseCases
+import com.refoodio.core.domain.model.inventory.InventoryItem
+import com.refoodio.core.domain.util.Resource
+import com.refoodio.core.ui.util.UiText
+import com.refoodio.core.domain.use_case.inventory.InventoryUseCases
+import com.refoodio.inventory.presentation.util.asInventoryErrorText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,22 +74,17 @@ class InventoryViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    // Hata durumunda, mesajı göster ve yükleme durumunu kapat
-                    val errorMessage = result.message?.asString(app)
-                        ?: app.getString(R.string.error_unknown) // Genel hata mesajı
-
+                    // 🎯 YENİ YAPI: Enum'ı al, UiText'e çevir, String yap ve State'e bas
+                    val uiText = result.errorType.asInventoryErrorText()
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = errorMessage
-                        )
+                        it.copy(isLoading = false, errorMessage = uiText.asString(app))
                     }
                 }
             }
         }.launchIn(viewModelScope)
     }
 
-    private fun addProduct(product: Product) {
+    private fun addProduct(product: InventoryItem) {
         inventoryUseCases.insertProduct(product).onEach { result ->
             when (result) {
                 is Resource.Loading -> {
@@ -103,18 +99,17 @@ class InventoryViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    // UiText'i burada gerçek String'e dönüştürüyoruz.
-                    val errorMessage = result.message
-                        ?: UiText.StringResource(R.string.error_unknown) // Bu errorMessage'i bir Snackbar, Toast veya UI state'i ile gösterin.
                     _state.update { it.copy(isLoading = false) }
-                    _effect.send(InventoryContract.SideEffect.ShowSnackbar(errorMessage))
+                    // 🎯 YENİ YAPI: SideEffect olarak Snackbar'a gönder
+                    val uiText = result.errorType.asInventoryErrorText()
+                    _effect.send(InventoryContract.SideEffect.ShowSnackbar(uiText))
                 }
             }
         }.launchIn(viewModelScope)
     }
 
     // --- BİTİRİLMİŞ `deleteProduct` FONKSİYONU ---
-    private fun deleteProduct(product: Product) {
+    private fun deleteProduct(product: InventoryItem) {
         // Bu UseCase'in de Flow<Resource<Unit>> döndürdüğünü varsayıyoruz
         inventoryUseCases.deleteProduct(product).onEach { result ->
             when (result) {
@@ -134,14 +129,10 @@ class InventoryViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    // Hata durumunda yüklemeyi kapat ve Snackbar ile hata göster.
-                    val errorMessage =
-                        result.message?.asString(app) // app, Application Context'idir.
-                    // Bu errorMessage'i bir Snackbar, Toast veya UI state'i ile gösterin.
-                    _state.update {
-                        it.copy(isLoading = false, errorMessage = errorMessage)                /*    val errorMessage = result.message ?: UiText.StringResource(R.string.error_unknown)
-                    _effect.send(InventoryContract.SideEffect.ShowSnackbar(errorMessage))*/
-                    }
+                    _state.update { it.copy(isLoading = false) }
+                    // 🎯 YENİ YAPI: Silme hatasını da mapper üzerinden geçiyoruz
+                    val uiText = result.errorType.asInventoryErrorText()
+                    _effect.send(InventoryContract.SideEffect.ShowSnackbar(uiText))
                 }
             }
         }.launchIn(viewModelScope)

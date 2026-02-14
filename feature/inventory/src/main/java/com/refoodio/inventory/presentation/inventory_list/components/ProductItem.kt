@@ -9,11 +9,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color // Doğru renk kütüphanesi
 import androidx.compose.ui.unit.dp
-import com.refoodio.inventory.domain.model.Product
+import com.refoodio.core.domain.model.inventory.InventoryItem
 
 @Composable
 fun ProductItem(
-    product: Product,
+    product: InventoryItem,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {

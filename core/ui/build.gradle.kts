@@ -49,4 +49,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview) // Preview için
     implementation(libs.androidx.compose.material3) // Gelecekte Colors vb. için
+
+    implementation(project(":core:domain"))
+
 }

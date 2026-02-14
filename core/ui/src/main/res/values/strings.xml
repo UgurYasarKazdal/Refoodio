@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_db">Veritabanı işlemi sırasında bir hata oluştu.</string>
+    <string name="error_network">İnternet bağlantınızı kontrol edin.</string>
+    <string name="error_unknown">Beklenmedik bir hata oluştu.</string>
+</resources>
