@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
+
 }
 
 android {
@@ -49,4 +51,7 @@ dependencies {
     // Coroutines
     api(libs.kotlinx.coroutines.core)
     api(libs.kotlinx.coroutines.android)
+
+    api(libs.kotlinx.serialization.json)
+
 }

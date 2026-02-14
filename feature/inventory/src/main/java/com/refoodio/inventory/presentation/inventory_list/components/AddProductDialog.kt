@@ -15,7 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.refoodio.inventory.domain.model.Product
+import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.inventory.presentation.inventory_list.InventoryContract
 
 @Composable
@@ -61,7 +61,7 @@ fun AddProductDialog(
         },
         confirmButton = {
             Button(onClick = {
-                val product = Product(
+                val product = InventoryItem(
                     name = name,
                     quantity = quantity.toDoubleOrNull()
                         ?: -1.0, // Geçersiz miktar testi burada devreye girecek

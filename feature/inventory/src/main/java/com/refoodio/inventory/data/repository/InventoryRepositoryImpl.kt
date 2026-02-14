@@ -1,10 +1,10 @@
 package com.refoodio.inventory.data.repository
 
-import com.refoodio.inventory.data.local.ProductDao
+import com.refoodio.core.database.dao.inventory.InventoryDao
 import com.refoodio.inventory.data.mapper.toDomain
 import com.refoodio.inventory.data.mapper.toEntity
-import com.refoodio.inventory.domain.repository.InventoryRepository
-import com.refoodio.inventory.domain.model.Product
+import com.refoodio.core.domain.repository.InventoryRepository
+import com.refoodio.core.domain.model.inventory.InventoryItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -12,24 +12,24 @@ import javax.inject.Inject
 // feature:inventory/data/repository/InventoryRepositoryImpl.kt
 
 class InventoryRepositoryImpl @Inject constructor(
-    private val productDao: ProductDao
+    private val inventoryDao: InventoryDao
 ) : InventoryRepository {
 
-    override fun getAllProducts(): Flow<List<Product>> {
+    override fun getAllProducts(): Flow<List<InventoryItem>> {
         // Database'den Flow<List<ProductEntity>> gelir
-        return productDao.getProductsFlow().map { entities ->
+        return inventoryDao.getProductsFlow().map { entities ->
             // Her bir Entity'yi Domain modeline (Product) çeviriyoruz
             entities.map { it.toDomain() }
         }
     }
 
-    override suspend fun addProduct(product: Product) {
+    override suspend fun addProduct(product: InventoryItem) {
         // Domain modelini kaydedebilmek için Entity'ye çeviriyoruz
-        productDao.insertProduct(product.toEntity())
+        inventoryDao.insertProduct(product.toEntity())
     }
 
-    override suspend fun deleteProduct(product: Product) {
-        productDao.deleteProduct(product.toEntity())
+    override suspend fun deleteProduct(product: InventoryItem) {
+        inventoryDao.deleteProduct(product.toEntity())
     }
 
 

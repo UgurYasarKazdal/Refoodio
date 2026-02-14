@@ -50,9 +50,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-    implementation(project(":core"))
-    ksp(libs.androidx.room.compiler)
-
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     // Compose
@@ -73,6 +70,8 @@ dependencies {
     // Modül ismin neyse onu yaz
     implementation(project(":core:navigation"))
     implementation(project(":core:ui"))
+    implementation(project(":core:database"))
+    implementation(project(":core:domain"))
 
 
     // Coroutine testleri için şart
