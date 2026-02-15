@@ -70,4 +70,5 @@ dependencies {
     implementation(project(":core:navigation"))
 
     runtimeOnly(project(":feature:inventory"))
+
 }

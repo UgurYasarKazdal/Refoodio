@@ -3,12 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.google.dagger.hilt.android)
-
 }
 
 android {
-    namespace = "com.refoodio.core.database"
+    namespace = "com.refoodio.core.data"
     compileSdk {
         version = release(36)
     }
@@ -46,16 +44,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Room
-    api(libs.androidx.room.runtime)
-    api(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    api(libs.kotlinx.serialization.json)
-
-    api(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-
+    implementation(project(":core:database"))
+    implementation(project(":core:domain"))
 
 }
