@@ -20,7 +20,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     // Hilt, InventoryNavImpl dahil tüm FeatureNavEntry'leri buraya getirir
     @Inject
     lateinit var navEntries: Set<@JvmSuppressWildcards FeatureNavEntry>

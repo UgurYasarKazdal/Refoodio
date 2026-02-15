@@ -1,6 +1,6 @@
-package com.refoodio.core.data.mapper
+package com.refoodio.core.data.mapper.catalog
 
-import com.refoodio.core.data.remote.FoodCatalogItemDto
+import com.refoodio.core.data.remote.catalog.FoodCatalogItemDto
 import com.refoodio.core.database.entity.catalog.FoodCatalogItemEntity
 import com.refoodio.core.domain.model.catalog.FoodItem
 
