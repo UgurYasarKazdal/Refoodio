@@ -68,11 +68,10 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Modül ismin neyse onu yaz
-    implementation(project(":core:navigation"))
+    api(project(":core:navigation"))
     implementation(project(":core:ui"))
-    implementation(project(":core:database"))
     implementation(project(":core:domain"))
-
+    implementation(project(":core:data"))
 
     // Coroutine testleri için şart
     testImplementation(libs.kotlinx.coroutines.test) // Unit testler için
