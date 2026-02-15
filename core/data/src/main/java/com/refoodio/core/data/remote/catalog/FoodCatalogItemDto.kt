@@ -1,4 +1,4 @@
-package com.refoodio.core.data.remote
+package com.refoodio.core.data.remote.catalog
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -1,4 +1,4 @@
-package com.refoodio.core.data.mapper
+package com.refoodio.core.data.mapper.inventory
 
 import com.refoodio.core.database.entity.inventory.InventoryEntity
 import com.refoodio.core.domain.model.inventory.InventoryItem

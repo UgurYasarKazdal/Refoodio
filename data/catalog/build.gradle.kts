@@ -1,12 +1,10 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.refoodio.core.data"
+    namespace = "com.refoodio.data.catalog"
     compileSdk {
         version = release(36)
     }
@@ -44,11 +42,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation(libs.androidx.datastore)
-    implementation(libs.androidx.startup)
-    ksp(libs.hilt.compiler)
-
-    implementation(project(":core:database"))
     implementation(project(":core:domain"))
 
 }

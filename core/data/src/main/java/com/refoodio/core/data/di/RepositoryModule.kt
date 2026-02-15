@@ -1,6 +1,8 @@
 package com.refoodio.core.data.di
 
-import com.refoodio.core.data.repository.InventoryRepositoryImpl
+import com.refoodio.core.data.repository.catalog.FoodCatalogRepositoryImpl
+import com.refoodio.core.data.repository.inventory.InventoryRepositoryImpl
+import com.refoodio.core.domain.repository.FoodCatalogRepository
 import com.refoodio.core.domain.repository.InventoryRepository
 import dagger.Binds
 import dagger.Module
@@ -11,9 +13,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-    @Singleton
     @Binds
+    @Singleton
     abstract fun bindInventoryRepository(
         inventoryRepositoryImpl: InventoryRepositoryImpl
     ): InventoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFoodCatalogRepository(
+        impl: FoodCatalogRepositoryImpl
+    ): FoodCatalogRepository
 }

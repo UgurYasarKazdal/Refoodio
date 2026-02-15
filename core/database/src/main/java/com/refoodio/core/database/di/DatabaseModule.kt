@@ -3,6 +3,7 @@ package com.refoodio.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.refoodio.core.database.RefoodioDatabase
+import com.refoodio.core.database.dao.catalog.FoodCatalogDao
 import com.refoodio.core.database.dao.inventory.InventoryDao
 import dagger.Module
 import dagger.Provides
@@ -27,7 +28,11 @@ object DatabaseModule {
 
     @Provides
     fun provideInventoryDao(db: RefoodioDatabase): InventoryDao = db.inventoryDao()
+    // Hilt'in hata verdiği kısım burası: DAO'yu Hilt'e tanıtıyoruz
 
-   /* @Provides
-    fun provideCatalogDao(db: RefoodioDatabase): FoodCatalogItemDao = db.catalogDao()
-*/}
+    @Provides
+    fun provideFoodCatalogDao(database: RefoodioDatabase): FoodCatalogDao {
+        return database.foodCatalogDao()
+    }
+
+}

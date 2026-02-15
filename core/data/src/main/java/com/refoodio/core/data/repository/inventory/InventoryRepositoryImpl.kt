@@ -1,7 +1,7 @@
-package com.refoodio.core.data.repository
+package com.refoodio.core.data.repository.inventory
 
-import com.refoodio.core.data.mapper.toDomain
-import com.refoodio.core.data.mapper.toEntity
+import com.refoodio.core.data.mapper.inventory.toDomain
+import com.refoodio.core.data.mapper.inventory.toEntity
 import com.refoodio.core.database.dao.inventory.InventoryDao
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.repository.InventoryRepository
@@ -29,6 +29,4 @@ class InventoryRepositoryImpl @Inject constructor(
     override suspend fun deleteProduct(product: InventoryItem) {
         inventoryDao.deleteProduct(product.toEntity())
     }
-
-
 }
