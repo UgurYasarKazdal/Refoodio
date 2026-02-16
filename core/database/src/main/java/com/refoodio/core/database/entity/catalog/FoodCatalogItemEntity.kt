@@ -2,7 +2,18 @@ package com.refoodio.core.database.entity.catalog
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Fts4
 import androidx.room.PrimaryKey
+
+@Entity(tableName = "food_catalog_fts")
+@Fts4(contentEntity = FoodCatalogItemEntity::class) // Ana tabloyu kaynak gösteriyoruz
+data class FoodCatalogFtsEntity(
+    @ColumnInfo(name = "name")
+    val name: String,
+
+    @ColumnInfo(name = "category")
+    val category: String
+)
 
 @Entity(tableName = "food_catalog_items")
 data class FoodCatalogItemEntity(

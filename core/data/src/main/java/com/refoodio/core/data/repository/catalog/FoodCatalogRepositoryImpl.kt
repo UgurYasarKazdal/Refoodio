@@ -23,8 +23,9 @@ class FoodCatalogRepositoryImpl @Inject constructor(
         // 1. Adım: Veri daha önce yüklendi mi? (DataSource üzerinden kontrol)
         // first() kullanarak Flow'dan o anki ilk değeri alıyoruz.
         val isLoaded = userPrefs.isFoodCatalogLoaded.first()
+        val count = dao.getCount()
 
-        if (!isLoaded) {
+        if (!isLoaded || count == 0) {
             try {
                 withContext(Dispatchers.IO) {
                     // 2. Adım: JSON dosyasını işle
