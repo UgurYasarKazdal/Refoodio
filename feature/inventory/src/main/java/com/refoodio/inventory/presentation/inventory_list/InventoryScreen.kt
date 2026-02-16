@@ -35,7 +35,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun InventoryScreen(
-    viewModel: InventoryViewModel = hiltViewModel()
+    viewModel: InventoryViewModel = hiltViewModel(),
+    onNavigateToAddInventory: () -> Unit // <-- Burası yeni!
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -68,6 +69,10 @@ fun InventoryScreen(
                     scope.launch {
                         snackbarHostState.showSnackbar(message = message)
                     }
+                }
+
+                is InventoryListContract.SideEffect.NavigateToAddInventory -> {
+                    onNavigateToAddInventory()
                 }
             }
         }

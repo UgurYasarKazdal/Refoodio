@@ -34,5 +34,8 @@ interface InventoryListContract {
          */
         data object ProductDeleted :
             SideEffect
+
+        data object NavigateToAddInventory : SideEffect
     }
+
 }

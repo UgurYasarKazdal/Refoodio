@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,7 +40,11 @@ class InventoryViewModel @Inject constructor(
         when (event) {
             is InventoryListContract.Event.DeleteProduct -> deleteProduct(event.product)
             is InventoryListContract.Event.LoadProducts -> loadProducts()
-            is InventoryListContract.Event.NavigateAddInventory -> {//TODO: Navigate Add Inventory
+            is InventoryListContract.Event.NavigateAddInventory -> {
+                viewModelScope.launch {
+                    // UI'ın LaunchedEffect ile dinlediği kanala sinyal gönderiyoruz
+                    _effect.send(InventoryListContract.SideEffect.NavigateToAddInventory)
+                }
             }
         }
     }
@@ -58,8 +63,7 @@ class InventoryViewModel @Inject constructor(
                     // Başarılı veri geldiğinde listeyi ve yükleme durumunu güncelle
                     _state.update {
                         it.copy(
-                            isLoading = false,
-                            products = result.data ?: emptyList()
+                            isLoading = false, products = result.data ?: emptyList()
                         )
                     }
                 }
