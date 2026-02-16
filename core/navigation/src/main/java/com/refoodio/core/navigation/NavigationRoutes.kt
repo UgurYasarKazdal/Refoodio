@@ -5,4 +5,7 @@ import kotlinx.serialization.Serializable
 object NavigationRoutes {
     @Serializable
     object InventoryRoute
+
+    @Serializable
+    object InventoryAddRoute
 }

@@ -1,5 +1,7 @@
 package com.refoodio.core.domain.model.inventory
 
+import com.refoodio.core.domain.util.daysToMillis
+
 data class InventoryItem(
     val id: Int = 0,
     val name: String,
@@ -8,7 +10,7 @@ data class InventoryItem(
 ) {
     // İş mantığı fonksiyonlarını buraya ekleyebiliriz
     fun isNearExpiry(): Boolean {
-        val threeDaysInMillis = 3 * 24 * 60 * 60 * 1000L
+        val threeDaysInMillis = 3.daysToMillis
         return (expiryDate - System.currentTimeMillis()) < threeDaysInMillis
     }
 }

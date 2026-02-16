@@ -1,6 +1,7 @@
-package com.refoodio.core.domain.use_case.inventory
+package com.refoodio.core.domain.use_case.inventory.addInventory
 
 import com.refoodio.core.domain.model.inventory.InventoryItem
+import com.refoodio.core.domain.use_case.inventory.InventoryErrors
 import com.refoodio.core.domain.util.ValidationResult
 
 // com/refoodio/inventory/domain/use_case/ValidateProductUseCase.kt

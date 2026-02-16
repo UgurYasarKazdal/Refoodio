@@ -30,13 +30,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.refoodio.core.ui.theme.Dimens
 import com.refoodio.inventory.R
-import com.refoodio.inventory.presentation.inventory_list.components.AddProductDialog
 import com.refoodio.inventory.presentation.inventory_list.components.ProductItem
 import kotlinx.coroutines.launch
 
 @Composable
 fun InventoryScreen(
-    viewModel: InventoryViewModel = hiltViewModel()
+    viewModel: InventoryViewModel = hiltViewModel(),
+    onNavigateToAddInventory: () -> Unit // <-- Burası yeni!
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -53,7 +53,7 @@ fun InventoryScreen(
         viewModel.effect.collect { effect ->
             // ViewModel'den gelen her SideEffect için bu blok çalışır.
             when (effect) {
-                is InventoryContract.SideEffect.ShowSnackbar -> {
+                is InventoryListContract.SideEffect.ShowSnackbar -> {
                     val message = effect.message.asString(context)
                     // --- DEĞİŞİKLİK 2: Snackbar'ı scope ile gösterin ---
                     scope.launch {
@@ -63,18 +63,16 @@ fun InventoryScreen(
                     }
                 }
 
-                is InventoryContract.SideEffect.ProductAdded -> {
-                    val message = context.getString(R.string.product_added_successfully)
+                is InventoryListContract.SideEffect.ProductDeleted -> {
+                    val message = context.getString(R.string.product_deleted_successfully)
                     // --- DEĞİŞİKLİK 2: Snackbar'ı scope ile gösterin ---
                     scope.launch {
                         snackbarHostState.showSnackbar(message = message)
                     }
-                    viewModel.handleEvent(InventoryContract.Event.DismissAddProductDialog)
                 }
 
-                is InventoryContract.SideEffect.ProductDeleted -> {
-                    // Bu zaten deleteProduct içinde bir Snackbar ile yönetiliyor,
-                    // ama istenirse burada da yönetilebilir.
+                is InventoryListContract.SideEffect.NavigateToAddInventory -> {
+                    onNavigateToAddInventory()
                 }
             }
         }
@@ -83,7 +81,7 @@ fun InventoryScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.handleEvent(InventoryContract.Event.ShowAddProductDialog) }) {
+            FloatingActionButton(onClick = { viewModel.handleEvent(InventoryListContract.Event.NavigateAddInventory) }) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add))
             }
         }) { padding ->
@@ -102,9 +100,9 @@ fun InventoryScreen(
 // Bu fonksiyon private olabilir, çünkü sadece InventoryScreen içinde kullanılıyor.
 @Composable
 private fun InventoryContent(
-    state: InventoryContract.State,
+    state: InventoryListContract.State,
     padding: PaddingValues,
-    onEvent: (InventoryContract.Event) -> Unit // Olayları dışarıya bildirir.
+    onEvent: (InventoryListContract.Event) -> Unit // Olayları dışarıya bildirir.
 ) {
     if (state.isLoading) {
         Box(
@@ -114,13 +112,6 @@ private fun InventoryContent(
             CircularProgressIndicator()
         }
     } else {
-        if (state.isAddProductDialogOpen) {
-            AddProductDialog(
-                state = state,
-                onEvent = onEvent, // Gelen event'i doğrudan yukarıya paslar.
-                onDismiss = { onEvent(InventoryContract.Event.DismissAddProductDialog) }
-            )
-        }
 
         if (state.products.isEmpty()) {
             Box(
@@ -145,7 +136,7 @@ private fun InventoryContent(
                 ) { product ->
                     ProductItem(
                         product = product,
-                        onDeleteClick = { onEvent(InventoryContract.Event.DeleteProduct(product)) } // Olayı yukarı bildirir.
+                        onDeleteClick = { onEvent(InventoryListContract.Event.DeleteProduct(product)) } // Olayı yukarı bildirir.
                     )
                 }
             }
