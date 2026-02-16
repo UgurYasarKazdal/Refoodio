@@ -8,7 +8,13 @@ interface InventoryAddContract {
         val suggestions: List<FoodItem> = emptyList(),
         val isLoading: Boolean = false,
         val query: String = "",
-        val errorMessage: String? = null
+        val errorMessage: String? = null,
+        val selectedFoodName: String = "",
+        val shelfLifeDays: Int = 0,
+        val expiryDate: Long? = null, // Hesaplanan milisaniye cinsinden tarih
+        val quantity: Int = 1,        // Varsayılan miktar
+        val selectedCategory: String = "",
+        val storageNote: String = ""
 
     )
 

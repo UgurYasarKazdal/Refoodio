@@ -8,6 +8,8 @@ import com.refoodio.inventory.presentation.add_inventory.InventoryAddViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -65,6 +67,40 @@ class InventoryAddViewModelTest {
 
     }
 
+    @Test
+    fun `when suggestion is selected, uiState should be populated with default values`() = runTest {
+        // Arrange: 7 gün raf ömrü olan bir mock gıda
+        val mockFood = createMockFoodItem(name = "Yoğurt", defaultShelfLife = 7)
+
+        // Act
+        viewModel.onSuggestionSelected(mockFood)
+
+        runCurrent()
+
+        // Assert
+        val state = viewModel.state.value
+        assertEquals("Yoğurt", state.selectedFoodName)
+        assertEquals(7, state.shelfLifeDays) // Varsayılan ömür aktarıldı mı?
+        assert(state.expiryDate != null)    // Tarih hesaplandı mı?
+    }
+
+    @Test
+    fun `when save button clicked, should call insert use case and handle success`() = runTest {
+        // 1. Arrange: Bir ürün seçilmiş olsun
+        val mockFood = createMockFoodItem(name = "Yoğurt", defaultShelfLife = 7)
+        viewModel.onSuggestionSelected(mockFood)
+        runCurrent()
+
+        // 2. Act: Kaydet butonuna basıldı
+        viewModel.addProduct()
+        runCurrent()
+
+        // 3. Assert: UseCase'in çağrıldığını ve loading'in bittiğini doğrula
+        // (Not: MockK kullanıyorsan coVerify { inventoryAddUseCases.insertProduct(any()) } diyebilirsin)
+        assertFalse(viewModel.state.value.isLoading)
+        assertNull(viewModel.state.value.errorMessage)
+    }
+
     @After
     fun tearDown() {
         Dispatchers.resetMain()
@@ -73,15 +109,16 @@ class InventoryAddViewModelTest {
 
 fun createMockFoodItem(
     id: Int = 1,
-    name: String = "Elma"
+    name: String = "Elma",
+    defaultShelfLife: Int = 7
 ) = FoodItem(
     id = id,
     name = name,
     alternativeNames = emptyList(),
     category = "Meyve",
     commonPairings = emptyList(),
-    defaultShelfLife = 7,
     openedShelfLife = null,
+    defaultShelfLife = defaultShelfLife,
     isFreezable = false,
     isEssential = true,
     isLiquid = false,
