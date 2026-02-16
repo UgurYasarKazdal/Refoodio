@@ -16,12 +16,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.refoodio.core.domain.model.inventory.InventoryItem
-import com.refoodio.inventory.presentation.inventory_list.InventoryContract
+import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 @Composable
 fun AddProductDialog(
-    state: InventoryContract.State,
-    onEvent: (InventoryContract.Event) -> Unit,
+    state: InventoryListContract.State,
+    onEvent: (InventoryListContract.Event) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by remember { mutableStateOf("") }
@@ -61,13 +61,13 @@ fun AddProductDialog(
         },
         confirmButton = {
             Button(onClick = {
-                val product = InventoryItem(
+                InventoryItem(
                     name = name,
                     quantity = quantity.toDoubleOrNull()
                         ?: -1.0, // Geçersiz miktar testi burada devreye girecek
                     expiryDate = System.currentTimeMillis()
                 )
-                onEvent(InventoryContract.Event.AddProduct(product))
+                //onEvent(InventoryListContract.Event.AddProduct(product))
             }) {
                 Text("Ekle")
             }

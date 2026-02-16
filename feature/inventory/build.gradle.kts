@@ -73,6 +73,8 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
 
+    testImplementation(libs.mockk)
+
     // Coroutine testleri için şart
     testImplementation(libs.kotlinx.coroutines.test) // Unit testler için
     androidTestImplementation(libs.kotlinx.coroutines.test) // Android (Room) testleri için

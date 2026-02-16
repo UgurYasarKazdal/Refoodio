@@ -1,8 +1,9 @@
-package com.refoodio.core.domain.use_case.inventory
+package com.refoodio.core.domain.use_case.inventory.inventoryList
 
 
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.repository.InventoryRepository
+import com.refoodio.core.domain.use_case.inventory.InventoryResource
 import com.refoodio.core.domain.util.asResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

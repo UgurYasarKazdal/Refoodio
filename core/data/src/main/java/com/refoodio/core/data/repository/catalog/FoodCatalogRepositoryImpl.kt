@@ -2,13 +2,18 @@ package com.refoodio.core.data.repository.catalog
 
 import android.content.Context
 import com.refoodio.core.data.local.UserPreferencesDataSource
+import com.refoodio.core.data.mapper.catalog.toDomain
 import com.refoodio.core.data.mapper.catalog.toEntity
 import com.refoodio.core.data.remote.catalog.FoodCatalogItemDto
 import com.refoodio.core.database.dao.catalog.FoodCatalogDao
+import com.refoodio.core.database.dao.catalog.FoodSuggestionDao
+import com.refoodio.core.domain.model.catalog.FoodItem
 import com.refoodio.core.domain.repository.FoodCatalogRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -16,7 +21,8 @@ import javax.inject.Inject
 class FoodCatalogRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context, // <-- Bu notasyon eksik!
     private val userPrefs: UserPreferencesDataSource, // Yeni merkezi kaynağımız
-    private val dao: FoodCatalogDao
+    private val dao: FoodCatalogDao,
+    private val sdao: FoodSuggestionDao
 ) : FoodCatalogRepository {
 
     override suspend fun loadFoodCatalog() {
@@ -42,6 +48,12 @@ class FoodCatalogRepositoryImpl @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    override fun searchSuggestions(query: String): Flow<List<FoodItem>> {
+        return sdao.searchSuggestions(query).map {
+            it.map { it.toDomain() }
         }
     }
 }
