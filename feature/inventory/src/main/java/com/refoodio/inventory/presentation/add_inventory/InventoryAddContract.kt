@@ -13,7 +13,8 @@ interface InventoryAddContract {
         val expiryDate: Long? = null, // Hesaplanan milisaniye cinsinden tarih
         val quantity: Int = 1,        // Varsayılan miktar
         val selectedCategory: String = "",
-        val storageNote: String = ""
+        val storageNote: String = "",
+        val isCameraVisible: Boolean = false
 
     )
 
@@ -24,6 +25,9 @@ interface InventoryAddContract {
         object OnDecrementQuantity : Event()
         data class OnDateChanged(val date: Long) : Event()
         object OnSaveProduct : Event()
+
+        data class OnBarcodeScanned(val barcode: String) : Event()
+        object OnToggleCamera : Event() // Kamerayı aç/kapat
 
     }
 
