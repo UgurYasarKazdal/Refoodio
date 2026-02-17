@@ -1,8 +1,10 @@
 package com.refoodio.inventory.di
 
 import com.refoodio.core.domain.repository.FoodCatalogRepository
+import com.refoodio.core.domain.repository.FoodRepository
 import com.refoodio.core.domain.repository.InventoryRepository
 import com.refoodio.core.domain.use_case.catalog.GetFoodSuggestionsUseCase
+import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcodeUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InsertProductUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.core.domain.use_case.inventory.addInventory.ValidateInventoryUseCase
@@ -37,9 +39,11 @@ object InventoryUseCaseModule {
     fun provideInventoryAddUseCases(
         inventoryRepository: InventoryRepository,
         catalogRepository: FoodCatalogRepository,
+        foodRepository: FoodRepository,
         validateInventory: ValidateInventoryUseCase
     ): InventoryAddUseCases = InventoryAddUseCases(
         insertProduct = InsertProductUseCase(inventoryRepository, validateInventory),
-        suggestionsUseCase = GetFoodSuggestionsUseCase(catalogRepository)
+        suggestionsUseCase = GetFoodSuggestionsUseCase(catalogRepository),
+        getFoodByBarcodeUseCase = GetFoodByBarcodeUseCase(foodRepository)
     )
 }
