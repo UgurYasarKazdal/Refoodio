@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 
 }
 
@@ -11,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 30
+        minSdk = 29
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -51,5 +52,10 @@ dependencies {
     implementation(libs.androidx.compose.material3) // Gelecekte Colors vb. için
 
     implementation(project(":core:domain"))
+
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.google.mlkit.barcode.scanning)
 
 }
