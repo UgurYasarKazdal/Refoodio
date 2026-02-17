@@ -1,8 +1,10 @@
 package com.refoodio.core.data.di
 
 import com.refoodio.core.data.repository.catalog.FoodCatalogRepositoryImpl
+import com.refoodio.core.data.repository.inventory.FoodRepositoryImpl
 import com.refoodio.core.data.repository.inventory.InventoryRepositoryImpl
 import com.refoodio.core.domain.repository.FoodCatalogRepository
+import com.refoodio.core.domain.repository.FoodRepository
 import com.refoodio.core.domain.repository.InventoryRepository
 import dagger.Binds
 import dagger.Module
@@ -24,4 +26,10 @@ abstract class RepositoryModule {
     abstract fun bindFoodCatalogRepository(
         impl: FoodCatalogRepositoryImpl
     ): FoodCatalogRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFoodRepository(
+        foodRepositoryImpl: FoodRepositoryImpl
+    ): FoodRepository
 }

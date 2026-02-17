@@ -1,12 +1,14 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.google.dagger.hilt.android)
+
 }
 
 android {
-    namespace = "com.refoodio.core.data"
+    namespace = "com.refoodio.core.network"
     compileSdk {
         version = release(36)
     }
@@ -22,8 +24,7 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
     }
@@ -44,12 +45,12 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation(libs.androidx.datastore)
-    implementation(libs.androidx.startup)
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.kotlin.serialization)
+    implementation(libs.okhttp.logging)
+
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-
-    implementation(project(":core:database"))
-    implementation(project(":core:domain"))
-    implementation(project(":core:network"))
-
 }

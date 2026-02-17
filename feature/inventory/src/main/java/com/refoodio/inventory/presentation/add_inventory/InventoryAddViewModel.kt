@@ -1,6 +1,5 @@
 package com.refoodio.inventory.presentation.add_inventory
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.refoodio.core.domain.model.inventory.InventoryItem
@@ -10,7 +9,6 @@ import com.refoodio.core.domain.util.daysToMillis
 import com.refoodio.inventory.presentation.util.asInventoryErrorText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -105,24 +103,35 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
             }
 
             is InventoryAddContract.Event.OnBarcodeScanned -> {
-                if (state.value.isLoading) return
-
-                _state.update { it.copy(isLoading = true) }
-                Log.d("BarcodeScanned", "Barkod Yakalandı: ${event.barcode}")
-
-                // Simülasyon: 2 saniye sonra kamerayı kapat ve loading'i bitir
-                viewModelScope.launch {
-                    delay(2000)
-                    _state.update { it.copy(isCameraVisible = false, isLoading = false) }
-                    // Burada event.barcode'u UI'da bir TextField'a set edebilirsin
-                }
-                //TODO: https://tr.openfoodfacts.org/api/v2/product/8692886310711.json kullanılacak. network retrofit
-                // searchProductByBarcode(event.barcode) // Barkoda göre ürünü getir
+                searchProductByBarcode(event.barcode)
             }
 
             is InventoryAddContract.Event.OnToggleCamera -> {
                 _state.update { it.copy(isCameraVisible = !it.isCameraVisible) }
             }
+        }
+    }
+
+    private fun searchProductByBarcode(barcode: String) {
+        viewModelScope.launch {
+            // Yarış durumunu (race condition) önlemek için kilidi vuruyoruz
+            _state.update { it.copy(isLoading = true) }
+
+            inventoryAddUseCases.getFoodByBarcodeUseCase(barcode)
+                .onSuccess { foodItem ->
+                    _state.update {
+                        it.copy(
+                            selectedFoodName = foodItem.name,
+                            selectedCategory = foodItem.category,
+                            isCameraVisible = false,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(isLoading = false) }
+                    // Hata mesajı için bir Effect tetiklenebilir
+                }
         }
     }
 
