@@ -15,8 +15,6 @@ object NetworkServiceModule {
     @Provides
     @Singleton
     fun provideFoodApi(retrofit: Retrofit): FoodApi {
-        // Hilt, 'retrofit' nesnesini core:network modülündeki NetworkModule'den bulup getirecek.
-        // Biz de o nesneyi kullanarak FoodApi'yi oluşturuyoruz.
         return retrofit.create(FoodApi::class.java)
     }
 }

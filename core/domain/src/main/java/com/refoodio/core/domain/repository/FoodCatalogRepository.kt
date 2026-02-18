@@ -6,6 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface FoodCatalogRepository {
     suspend fun loadFoodCatalog()
 
-    // FoodCatalogRepository.kt içinde
     fun searchSuggestions(query: String): Flow<List<FoodItem>>
 }

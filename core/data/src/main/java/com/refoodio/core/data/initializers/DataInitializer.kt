@@ -34,7 +34,7 @@ class DataInitializer : Initializer<Unit> {
     interface DataInitializerEntryPoint {
         fun foodCatalogRepository(): FoodCatalogRepository
 
-        @ApplicationScope // Hilt'e "Benim özel tanımladığım scope'u ver" diyorsun
+        @ApplicationScope
         fun applicationScope(): CoroutineScope
     }
 }

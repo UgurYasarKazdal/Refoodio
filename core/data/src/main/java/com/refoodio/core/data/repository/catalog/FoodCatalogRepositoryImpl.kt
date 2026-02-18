@@ -1,6 +1,7 @@
 package com.refoodio.core.data.repository.catalog
 
 import android.content.Context
+import android.util.Log
 import com.refoodio.core.data.local.UserPreferencesDataSource
 import com.refoodio.core.data.mapper.catalog.toDomain
 import com.refoodio.core.data.mapper.catalog.toEntity
@@ -15,38 +16,38 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import javax.inject.Inject
 
 class FoodCatalogRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context, // <-- Bu notasyon eksik!
-    private val userPrefs: UserPreferencesDataSource, // Yeni merkezi kaynağımız
+    @ApplicationContext private val context: Context,
+    private val userPrefs: UserPreferencesDataSource,
     private val dao: FoodCatalogDao,
     private val sdao: FoodSuggestionDao
 ) : FoodCatalogRepository {
 
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun loadFoodCatalog() {
-        // 1. Adım: Veri daha önce yüklendi mi? (DataSource üzerinden kontrol)
-        // first() kullanarak Flow'dan o anki ilk değeri alıyoruz.
         val isLoaded = userPrefs.isFoodCatalogLoaded.first()
         val count = dao.getCount()
+        if (isLoaded && count > 0) return
 
-        if (!isLoaded || count == 0) {
-            try {
-                withContext(Dispatchers.IO) {
-                    // 2. Adım: JSON dosyasını işle
-                    val jsonString = context.assets.open("food_catalog.json").bufferedReader()
-                        .use { it.readText() }
-                    val dtos = Json.Default.decodeFromString<List<FoodCatalogItemDto>>(jsonString)
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val inputStream =
+                    context.assets.open("food_catalog.json")
 
-                    // 3. Adım: Veritabanına kaydet
+                val dtos = inputStream.use {
+                    Json.decodeFromStream<List<FoodCatalogItemDto>>(it)
+                }
+                if (dtos.isNotEmpty()) {
                     dao.insertAll(dtos.map { it.toEntity() })
-
-                    // 4. Adım: Başarılıysa DataStore bayrağını güncelle
                     userPrefs.setFoodCatalogLoaded(true)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            }.onFailure { e ->
+                Log.e("FoodCatalog", "Katalog yüklenirken hata oluştu", e)
             }
         }
     }

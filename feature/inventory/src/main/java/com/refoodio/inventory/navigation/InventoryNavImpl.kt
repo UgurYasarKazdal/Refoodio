@@ -1,10 +1,10 @@
 package com.refoodio.inventory.navigation
 
 import androidx.navigation.compose.composable
-import com.refoodio.inventory.presentation.inventory_list.InventoryScreen
 import com.refoodio.core.navigation.FeatureNavEntry
 import com.refoodio.core.navigation.NavigationRoutes
 import com.refoodio.inventory.presentation.add_inventory.AddInventoryScreen
+import com.refoodio.inventory.presentation.inventory_list.InventoryScreen
 import javax.inject.Inject
 
 internal class InventoryNavImpl @Inject constructor() :
@@ -15,8 +15,9 @@ internal class InventoryNavImpl @Inject constructor() :
     ) {
         navGraphBuilder.composable<NavigationRoutes.InventoryRoute> { // <--- Generic tip olarak veriyoruz
             InventoryScreen(onNavigateToAddInventory = {
-                // Compose Navigation'da tip güvenli (Type Safe) navigasyon kullanıyorsan:
-                navController.navigate(NavigationRoutes.InventoryAddRoute)
+                if (navController.currentDestination?.route != NavigationRoutes.InventoryAddRoute::class.qualifiedName) {
+                    navController.navigate(NavigationRoutes.InventoryAddRoute)
+                }
             })
         }
         navGraphBuilder.composable<NavigationRoutes.InventoryAddRoute> {

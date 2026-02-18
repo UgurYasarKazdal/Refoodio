@@ -15,7 +15,7 @@ fun <T> Flow<T>.asResource(
         .onStart { if (includeLoading) emit(Resource.Loading) }
         .catch { e ->
             val errorType = when (e) {
-                is ValidationException -> e.errorType // Validasyon hatasını buradan al
+                is ValidationException -> e.errorType
                 is SQLException -> CommonError.DATABASE_ERROR
                 is IOException -> CommonError.NETWORK_ERROR
                 else -> CommonError.UNKNOWN_ERROR

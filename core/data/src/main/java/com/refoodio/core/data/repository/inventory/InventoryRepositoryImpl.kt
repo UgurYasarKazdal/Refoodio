@@ -5,8 +5,11 @@ import com.refoodio.core.data.mapper.inventory.toEntity
 import com.refoodio.core.database.dao.inventory.InventoryDao
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.repository.InventoryRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class InventoryRepositoryImpl @Inject constructor(
@@ -14,19 +17,20 @@ class InventoryRepositoryImpl @Inject constructor(
 ) : InventoryRepository {
 
     override fun getAllProducts(): Flow<List<InventoryItem>> {
-        // Database'den Flow<List<ProductEntity>> gelir
         return inventoryDao.getProductsFlow().map { entities ->
-            // Her bir Entity'yi Domain modeline (Product) çeviriyoruz
             entities.map { it.toDomain() }
-        }
+        }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun addProduct(product: InventoryItem) {
-        // Domain modelini kaydedebilmek için Entity'ye çeviriyoruz
-        inventoryDao.insertProduct(product.toEntity())
+        withContext(Dispatchers.IO) {
+            inventoryDao.insertProduct(product.toEntity())
+        }
     }
 
     override suspend fun deleteProduct(product: InventoryItem) {
-        inventoryDao.deleteProduct(product.toEntity())
+        withContext(Dispatchers.IO) {
+            inventoryDao.deleteProduct(product.toEntity())
+        }
     }
 }
