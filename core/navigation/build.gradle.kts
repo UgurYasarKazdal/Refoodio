@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
 
 }
 
@@ -48,4 +49,11 @@ dependencies {
 
     // Hilt Navigation
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // --- BURAYA EKLENMELİ ---
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling.preview) // Preview için
+    implementation(libs.androidx.compose.material3) // Gelecekte Colors vb. için
 }

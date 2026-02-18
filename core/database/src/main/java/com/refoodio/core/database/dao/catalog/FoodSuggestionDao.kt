@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FoodSuggestionDao {
-    @Transaction // İki tabloyu birleştirdiğimiz için Transaction güvenlidir
+    @Transaction
     @Query(
         """
         SELECT * FROM food_catalog_items 

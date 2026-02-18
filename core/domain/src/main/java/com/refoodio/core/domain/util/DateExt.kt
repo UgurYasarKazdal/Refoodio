@@ -1,12 +1,18 @@
 package com.refoodio.core.domain.util
 
 import com.refoodio.core.domain.util.TimeConstants.ONE_DAY_IN_MILLIS
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 val Int.daysToMillis: Long get() = this * ONE_DAY_IN_MILLIS
 
-// core/domain/util/DateExt.kt
 fun Long.toReadableDate(): String {
-    val date = java.util.Date(this)
-    val format = java.text.SimpleDateFormat("dd MMMM yyyy", java.util.Locale.getDefault())
-    return format.format(date)
+    val instant = Instant.ofEpochMilli(this)
+
+    val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
+        .withZone(ZoneId.systemDefault())
+
+    return formatter.format(instant)
 }

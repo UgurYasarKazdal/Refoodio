@@ -7,7 +7,6 @@ class GetFoodByBarcodeUseCase constructor(
     private val repository: FoodRepository
 ) {
     suspend operator fun invoke(barcode: String): Result<FoodItem> {
-        // Burada gerekirse barkod formatı kontrolü gibi ek iş mantıkları eklenebilir
         if (barcode.isBlank()) {
             return Result.failure(Exception("Barkod boş olamaz"))
         }

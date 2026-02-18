@@ -17,13 +17,9 @@ class InsertProductUseCase(
         val validation = validateProduct.execute(product)
 
         if (!validation.successful) {
-            // Hata emitlemiyoruz, fırlatıyoruz!
-            // asResource bunu catch içinde yakalayıp Resource.Error'a çevirecek.
-
             throw ValidationException(errorType = validation.errorType ?: CommonError.UNKNOWN_ERROR)
         }
 
-        // Repository zaten Unit dönüyor, tertemiz emit ediyoruz.
         emit(repository.addProduct(product))
 
     }.asResource()

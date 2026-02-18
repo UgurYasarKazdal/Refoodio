@@ -25,13 +25,8 @@ object DatabaseModule {
         ).fallbackToDestructiveMigration(true).build()
     }
 
-    /* Room.databaseBuilder(context, RefoodioDatabase::class.java, "refoodio_db")
-     .fallbackToDestructiveMigration() // Şema değişince eskiyi siler, yeniyi hatasız kurar
-     .build()*/
-
     @Provides
     fun provideInventoryDao(db: RefoodioDatabase): InventoryDao = db.inventoryDao()
-    // Hilt'in hata verdiği kısım burası: DAO'yu Hilt'e tanıtıyoruz
 
     @Provides
     fun provideFoodCatalogDao(database: RefoodioDatabase): FoodCatalogDao {

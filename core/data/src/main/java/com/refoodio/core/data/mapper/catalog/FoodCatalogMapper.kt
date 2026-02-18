@@ -4,7 +4,6 @@ import com.refoodio.core.data.remote.catalog.FoodCatalogItemDto
 import com.refoodio.core.database.entity.catalog.FoodCatalogItemEntity
 import com.refoodio.core.domain.model.catalog.FoodItem
 
-// Entity'den Domain Model'e (UI'a veri verirken kullanılır)
 fun FoodCatalogItemEntity.toDomain(): FoodItem {
     return FoodItem(
         id = this.id,
@@ -25,7 +24,6 @@ fun FoodCatalogItemEntity.toDomain(): FoodItem {
     )
 }
 
-// DTO'dan Entity'ye (Database'e kaydederken kullanılır)
 fun FoodCatalogItemDto.toEntity(): FoodCatalogItemEntity {
     return FoodCatalogItemEntity(
         id = this.id ?: 0,

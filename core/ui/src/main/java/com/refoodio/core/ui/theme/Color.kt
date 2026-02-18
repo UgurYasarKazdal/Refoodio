@@ -1,4 +1,4 @@
-package com.refoodio.ui.theme
+package com.refoodio.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

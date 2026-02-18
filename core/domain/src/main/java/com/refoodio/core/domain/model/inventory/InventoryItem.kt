@@ -8,7 +8,6 @@ data class InventoryItem(
     val expiryDate: Long,
     val quantity: Double
 ) {
-    // İş mantığı fonksiyonlarını buraya ekleyebiliriz
     fun isNearExpiry(): Boolean {
         val threeDaysInMillis = 3.daysToMillis
         return (expiryDate - System.currentTimeMillis()) < threeDaysInMillis

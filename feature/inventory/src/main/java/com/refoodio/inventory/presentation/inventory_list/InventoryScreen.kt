@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.refoodio.core.ui.theme.Dimens
+import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.components.ProductItem
 import kotlinx.coroutines.launch
@@ -127,8 +127,8 @@ private fun InventoryContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(Dimens.LargePadding), // Bunu Dimens ile değiştirebiliriz.
-                verticalArrangement = Arrangement.spacedBy(Dimens.MediumPadding)
+                contentPadding = PaddingValues(RefoodioTheme.spacing.large), // Bunu Dimens ile değiştirebiliriz.
+                verticalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.medium)
             ) {
                 items(
                     items = state.products,

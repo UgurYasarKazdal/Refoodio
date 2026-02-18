@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(project(":core:navigation"))
+    implementation(project(":core:ui"))
 
     runtimeOnly(project(":feature:inventory"))
 

@@ -1,10 +1,12 @@
 package com.refoodio.core.ui.theme
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-
-object Dimens {
-    val SmallPadding = 4.dp
-    val MediumPadding = 8.dp
-    val LargePadding = 16.dp
-}
+data class RefoodioSpacing(
+    val default: Dp = 0.dp,
+    val small: Dp = 4.dp,
+    val medium: Dp = 8.dp,
+    val large: Dp = 16.dp,
+    val extraLarge: Dp = 32.dp
+)

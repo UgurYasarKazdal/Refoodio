@@ -1,9 +1,5 @@
 package com.refoodio.core.domain.model.catalog
 
-/**
- * Uygulamanın temel gıda öğesi modeli. 
- * Hiçbir kütüphaneye (Room, Serialization vb.) bağımlılığı yoktur.
- */
 data class FoodItem(
     val id: Int,
     val name: String,

@@ -1,4 +1,4 @@
-package com.refoodio.inventory.domain.repository
+package com.refoodio.inventory
 
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.repository.InventoryRepository
@@ -6,8 +6,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeInventoryRepository : InventoryRepository {
-
-    // Gerçek veritabanı yerine bellekte (RAM) tutuyoruz
     private val products = mutableListOf<InventoryItem>()
     private val productsFlow = MutableStateFlow<List<InventoryItem>>(emptyList())
 
