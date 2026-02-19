@@ -1,6 +1,7 @@
 package com.refoodio.inventory.presentation.add_inventory
 
 import com.refoodio.core.domain.model.catalog.FoodItem
+import com.refoodio.core.ui.util.UiText
 
 interface InventoryAddContract {
     data class State(
@@ -10,8 +11,8 @@ interface InventoryAddContract {
         val errorMessage: String? = null,
         val selectedFoodName: String = "",
         val shelfLifeDays: Int = 0,
-        val expiryDate: Long? = null, // Hesaplanan milisaniye cinsinden tarih
-        val quantity: Int = 1,        // Varsayılan miktar
+        val expiryDate: Long? = null,
+        val quantity: Int = 1,
         val selectedCategory: String = "",
         val storageNote: String = "",
         val isCameraVisible: Boolean = false
@@ -26,13 +27,14 @@ interface InventoryAddContract {
         data class OnDateChanged(val date: Long) : Event()
         object OnSaveProduct : Event()
 
+        object OnPermissionDenied : Event() // Yeni Event
         data class OnBarcodeScanned(val barcode: String) : Event()
         object OnToggleCamera : Event() // Kamerayı aç/kapat
 
     }
 
-    sealed class Effect {
-        object NavigateBack : Effect()
-        data class ShowError(val message: String) : Effect()
+    sealed class SideEffect {
+        object NavigateBack : SideEffect()
+        data class ShowSnackBar(val message: UiText) : SideEffect()
     }
 }

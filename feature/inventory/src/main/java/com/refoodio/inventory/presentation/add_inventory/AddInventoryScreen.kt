@@ -2,7 +2,6 @@ package com.refoodio.inventory.presentation.add_inventory
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -38,6 +37,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -51,7 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
@@ -59,6 +60,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.refoodio.core.domain.util.toReadableDate
 import com.refoodio.core.ui.components.camera.CameraPreview
+import com.refoodio.core.ui.theme.RefoodioTheme
+import com.refoodio.inventory.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,29 +74,33 @@ fun AddInventoryScreen(
 
     val context = LocalContext.current
 
-    // İzin isteme mekanizması
+    val snackbarHostState = remember { SnackbarHostState() }
+
+
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // İzin verildi, kamerayı aç
             viewModel.handleEvent(InventoryAddContract.Event.OnToggleCamera)
         } else {
-            // İzin reddedildi, kullanıcıya bir Toast veya uyarı göster
-            Toast.makeText(context, "Barkod taramak için kamera izni gerekiyor", Toast.LENGTH_SHORT)
-                .show()
+            viewModel.handleEvent(InventoryAddContract.Event.OnPermissionDenied)
         }
     }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is InventoryAddContract.Effect.NavigateBack -> onNavigateBack()
+                is InventoryAddContract.SideEffect.NavigateBack -> onNavigateBack()
+                is InventoryAddContract.SideEffect.ShowSnackBar -> {
+                    val message = effect.message.asString(context)
+                    snackbarHostState.showSnackbar(
+                        message = message, duration = SnackbarDuration.Short
+                    )
+                }
             }
         }
     }
 
-// DatePicker görünürlük kontrolü
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = state.expiryDate
@@ -102,15 +109,14 @@ fun AddInventoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(scrollState), // İçeriğin kaydırılabilir olmasını sağlar
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(RefoodioTheme.spacing.large)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.large)
     ) {
-        // 1. Arama Çubuğu
         OutlinedTextField(
-            value = state.searchQuery, // State içinde query tuttuğunu varsayıyoruz
+            value = state.searchQuery,
             onValueChange = { viewModel.handleEvent(InventoryAddContract.Event.OnQueryChanged(it)) },
-            label = { Text("Ürün Ara (örn: Yoğurt)") },
+            label = { Text(stringResource(R.string.add_inventory_search_label)) },
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 IconButton(onClick = {
@@ -123,16 +129,17 @@ fun AddInventoryScreen(
                     }
                 }) {
                     Icon(
-                        imageVector = Icons.Default.QrCodeScanner, contentDescription = "Barkod Oku"
+                        imageVector = Icons.Default.QrCodeScanner, contentDescription = stringResource(
+                            R.string.add_inventory_barcode_content_desc
+                        )
                     )
                 }
             })
 
-        // Kamera Dialog'u
         if (state.isCameraVisible) {
             Dialog(
                 onDismissRequest = { viewModel.handleEvent(InventoryAddContract.Event.OnToggleCamera) },
-                properties = DialogProperties(usePlatformDefaultWidth = false) // Tam ekran için
+                properties = DialogProperties(usePlatformDefaultWidth = false)
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     CameraPreview(
@@ -142,18 +149,17 @@ fun AddInventoryScreen(
                                     barcode
                                 )
                             )
-                        }, isLoading = state.isLoading // ViewModel'den gelen canlı state
+                        }, isLoading = state.isLoading
                     )
 
-                    // Kapatma Butonu
                     IconButton(
                         onClick = { viewModel.handleEvent(InventoryAddContract.Event.OnToggleCamera) },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(16.dp)
+                            .padding(RefoodioTheme.spacing.large)
                     ) {
                         Icon(
-                            Icons.Default.Close, contentDescription = "Kapat", tint = Color.White
+                            Icons.Default.Close, contentDescription = stringResource(R.string.add_inventory_close_content_desc), tint = Color.White
                         )
                     }
                 }
@@ -161,46 +167,45 @@ fun AddInventoryScreen(
 
         }
 
-        // 2. Öneri Listesi (Race Condition'ı ViewModel'de çözmüştük, burada sadece gösteriyoruz)
         if (state.suggestions.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 200.dp)
+                    .heightIn(max = RefoodioTheme.dimens.suggestionListMaxHeight)
             ) {
                 items(state.suggestions) { food ->
-                    Text(text = food.name, modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            viewModel.handleEvent(
-                                InventoryAddContract.Event.OnSuggestionSelected(
-                                    food
+                    Text(
+                        text = food.name, modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.handleEvent(
+                                    InventoryAddContract.Event.OnSuggestionSelected(
+                                        food
+                                    )
                                 )
-                            )
-                        }
-                        .padding(8.dp))
+                            }
+                            .padding(RefoodioTheme.spacing.medium))
                 }
             }
         }
 
-        // 3. Seçilen Ürün Bilgileri
         if (state.selectedFoodName.isNotEmpty()) {
             Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(RefoodioTheme.spacing.large)) {
                     Text(
-                        text = "Seçilen: ${state.selectedFoodName}",
+                        text = stringResource(R.string.add_inventory_selected_label, state.selectedFoodName),
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Text(text = "Kategori: ${state.selectedCategory}")
 
-                    // Miktar Butonları (+/-)
+                    Text(text = stringResource(R.string.add_inventory_category_label, state.selectedCategory))
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { viewModel.handleEvent(InventoryAddContract.Event.OnDecrementQuantity) }) {
-                            Icon(Icons.Default.RemoveCircle, "Azalt")
+                            Icon(Icons.Default.RemoveCircle, stringResource(R.string.add_inventory_decrease_qty))
                         }
                         Text(text = "${state.quantity}")
                         IconButton(onClick = { viewModel.handleEvent(InventoryAddContract.Event.OnIncrementQuantity) }) {
-                            Icon(Icons.Default.AddCircle, "Artır")
+                            Icon(Icons.Default.AddCircle, stringResource(R.string.add_inventory_increase_qty))
                         }
                     }
                 }
@@ -210,22 +215,22 @@ fun AddInventoryScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { showDatePicker = true } // Alana tıklayınca takvim açılsın
-            .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                .clickable { showDatePicker = true }
+                .padding(vertical = RefoodioTheme.spacing.medium),
+            verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = Icons.Default.CalendarToday, contentDescription = null)
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(RefoodioTheme.spacing.smallMedium))
             Column {
                 Text(
-                    text = "Son Tüketim Tarihi", style = MaterialTheme.typography.labelMedium
+                    text = stringResource(R.string.add_inventory_expiry_date_label), style = MaterialTheme.typography.labelMedium
                 )
                 Text(
-                    text = state.expiryDate?.toReadableDate() ?: "Tarih Seçilmedi",
+                    text = state.expiryDate?.toReadableDate() ?: stringResource(R.string.add_inventory_no_date_selected),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
         }
 
-        // DatePicker Dialog
         if (showDatePicker) {
             DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
                 TextButton(onClick = {
@@ -237,17 +242,16 @@ fun AddInventoryScreen(
                         )
                     }
                     showDatePicker = false
-                }) { Text("Tamam") }
+                }) { Text(stringResource(R.string.add_inventory_dialog_ok)) }
             }, dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("İptal") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.add_inventory_dialog_cancel)) }
             }) {
                 DatePicker(state = datePickerState)
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(RefoodioTheme.spacing.extraLarge))
 
-        // 4. Kaydet Butonu
         Button(
             onClick = { viewModel.handleEvent(InventoryAddContract.Event.OnSaveProduct) },
             modifier = Modifier.fillMaxWidth(),
@@ -255,12 +259,12 @@ fun AddInventoryScreen(
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(RefoodioTheme.dimens.loadingIndicatorSmall),
+                    strokeWidth = RefoodioTheme.stroke.standard,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Envantere Ekle")
+                Text(stringResource(R.string.add_inventory_save_button))
             }
         }
     }

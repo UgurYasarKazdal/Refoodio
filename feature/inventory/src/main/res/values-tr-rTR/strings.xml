@@ -8,4 +8,17 @@
     <string name="product_added_successfully">Ürün başarıyla kaydedildi!</string>
     <string name="add">Ekle</string>
     <string name="empty_kitchen_message">Mutfak boş, haydi alışverişe! 🛒</string>
+    <string name="need_permission_to_camera">Barkod taramak için kamera izni gerekiyor</string>
+    <string name="add_inventory_search_label">Ürün Ara (örn: Yoğurt)</string>
+    <string name="add_inventory_barcode_content_desc">Barkod Oku</string>
+    <string name="add_inventory_close_content_desc">Kapat</string>
+    <string name="add_inventory_selected_label">Seçilen: %1$s</string>
+    <string name="add_inventory_category_label">Kategori: %1$s</string>
+    <string name="add_inventory_decrease_qty">Azalt</string>
+    <string name="add_inventory_increase_qty">Artır</string>
+    <string name="add_inventory_expiry_date_label">Son Tüketim Tarihi</string>
+    <string name="add_inventory_no_date_selected">Tarih Seçilmedi</string>
+    <string name="add_inventory_dialog_ok">Tamam</string>
+    <string name="add_inventory_dialog_cancel">İptal</string>
+    <string name="add_inventory_save_button">Envantere Ekle</string>
 </resources>

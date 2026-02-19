@@ -6,6 +6,8 @@ import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.core.domain.util.Resource
 import com.refoodio.core.domain.util.daysToMillis
+import com.refoodio.core.ui.util.UiText
+import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.util.asInventoryErrorText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -26,7 +28,7 @@ import javax.inject.Inject
 class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases: InventoryAddUseCases) :
     ViewModel() {
 
-    private val _effect = Channel<InventoryAddContract.Effect.NavigateBack>()
+    private val _effect = Channel<InventoryAddContract.SideEffect>()
     val effect = _effect.receiveAsFlow()
 
     private val searchQuery = MutableStateFlow("")
@@ -109,6 +111,16 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
             is InventoryAddContract.Event.OnToggleCamera -> {
                 _state.update { it.copy(isCameraVisible = !it.isCameraVisible) }
             }
+
+            is InventoryAddContract.Event.OnPermissionDenied -> {
+                viewModelScope.launch {
+                    _effect.send(
+                        InventoryAddContract.SideEffect.ShowSnackBar(
+                            UiText.StringResource(R.string.need_permission_to_camera)
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -160,7 +172,7 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
                         )
                     }
 
-                    _effect.send(InventoryAddContract.Effect.NavigateBack)// Burada başarılı sinyali (Event) gönderebilirsin
+                    _effect.send(InventoryAddContract.SideEffect.NavigateBack)// Burada başarılı sinyali (Event) gönderebilirsin
                     // 🚀 İŞTE BURASI: Başarılıysa sinyali gönder
                 }
 
