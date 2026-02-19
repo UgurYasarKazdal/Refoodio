@@ -19,35 +19,41 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import java.util.Locale
 import javax.inject.Inject
 
 class FoodCatalogRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val userPrefs: UserPreferencesDataSource,
     private val dao: FoodCatalogDao,
-    private val sdao: FoodSuggestionDao
+    private val sdao: FoodSuggestionDao,
+    private val json: Json
 ) : FoodCatalogRepository {
 
     @OptIn(ExperimentalSerializationApi::class)
     override suspend fun loadFoodCatalog() {
+        val currentLang = Locale.getDefault().language
+        val lastDeviceLang = userPrefs.lastDeviceLang.first()
+        val isLangSame = currentLang.equals(lastDeviceLang)
+
         val isLoaded = userPrefs.isFoodCatalogLoaded.first()
         val count = dao.getCount()
-        if (isLoaded && count > 0) return
+        if (isLoaded && count > 0 && isLangSame) return
 
         withContext(Dispatchers.IO) {
             runCatching {
-                val inputStream =
-                    context.assets.open("food_catalog.json")
-
+                val inputStream = context.assets.open("food_catalog_$currentLang.json")
                 val dtos = inputStream.use {
-                    Json.decodeFromStream<List<FoodCatalogItemDto>>(it)
+                    json.decodeFromStream<List<FoodCatalogItemDto>>(it)
                 }
                 if (dtos.isNotEmpty()) {
-                    dao.insertAll(dtos.map { it.toEntity() })
-                    userPrefs.setFoodCatalogLoaded(true)
+                    dao.clearAndInsert(dtos.map { it.toEntity() })
                 }
             }.onFailure { e ->
                 Log.e("FoodCatalog", "Katalog yüklenirken hata oluştu", e)
+            }.onSuccess {
+                userPrefs.setLastDeviceLang(currentLang)
+                userPrefs.setFoodCatalogLoaded(true)
             }
         }
     }

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.refoodio.core.database.entity.catalog.FoodCatalogItemEntity
 
 @Dao
@@ -14,4 +15,12 @@ interface FoodCatalogDao {
     @Query("SELECT COUNT(*) FROM food_catalog_items")
     suspend fun getCount(): Int
 
+    @Query("DELETE FROM food_catalog_items")
+    suspend fun deleteAll()
+
+    @Transaction
+    suspend fun clearAndInsert(items: List<FoodCatalogItemEntity>) {
+        deleteAll()
+        insertAll(items)
+    }
 }
