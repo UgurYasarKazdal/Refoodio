@@ -10,7 +10,7 @@ data class RefoodioSpacing(
     val default: Dp = 0.dp,
     val small: Dp = 4.dp,
     val medium: Dp = 8.dp,
-    val smallMedium: Dp = 12.dp,
+    val mediumLarge: Dp = 12.dp,
     val large: Dp = 16.dp,
     val extraLarge: Dp = 32.dp
 )
