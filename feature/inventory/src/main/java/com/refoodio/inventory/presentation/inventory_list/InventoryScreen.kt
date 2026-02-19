@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,44 +30,32 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.components.ProductItem
-import kotlinx.coroutines.launch
 
 @Composable
 fun InventoryScreen(
     viewModel: InventoryViewModel = hiltViewModel(),
-    onNavigateToAddInventory: () -> Unit // <-- Burası yeni!
+    onNavigateToAddInventory: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // --- DEĞİŞİKLİK 1: SnackbarHostState'i oluşturun ---
     val snackbarHostState = remember { SnackbarHostState() }
-    // Snackbar'ı göstermek için bir coroutine scope'a ihtiyacımız olacak
-    val scope = rememberCoroutineScope()
 
-    // LaunchedEffect: Sadece bir kereliğine çalışır ve coroutine'i başlatır.
-    // viewModel.effect akışını dinler. Ekran recompose olsa bile tekrar çalışmaz.
-    // 'true' veya 'Unit' gibi anahtarlar, coroutine'in ekranın yaşam döngüsü boyunca aktif kalmasını sağlar.
     LaunchedEffect(key1 = Unit) {
         viewModel.effect.collect { effect ->
-            // ViewModel'den gelen her SideEffect için bu blok çalışır.
             when (effect) {
                 is InventoryListContract.SideEffect.ShowSnackbar -> {
                     val message = effect.message.asString(context)
-                    // --- DEĞİŞİKLİK 2: Snackbar'ı scope ile gösterin ---
-                    scope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = message, duration = SnackbarDuration.Short
-                        )
-                    }
+                    snackbarHostState.showSnackbar(
+                        message = message, duration = SnackbarDuration.Short
+                    )
+
                 }
 
                 is InventoryListContract.SideEffect.ProductDeleted -> {
                     val message = context.getString(R.string.product_deleted_successfully)
-                    // --- DEĞİŞİKLİK 2: Snackbar'ı scope ile gösterin ---
-                    scope.launch {
-                        snackbarHostState.showSnackbar(message = message)
-                    }
+                    snackbarHostState.showSnackbar(message = message)
+
                 }
 
                 is InventoryListContract.SideEffect.NavigateToAddInventory -> {
@@ -85,24 +72,20 @@ fun InventoryScreen(
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add))
             }
         }) { padding ->
-        // Ana iskelet, içeriği çizme sorumluluğunu stateless komponente devrediyor.
         InventoryContent(
             state = state,
             padding = padding,
-            onEvent = viewModel::handleEvent // viewModel.handleEvent fonksiyonunu doğrudan referans olarak veriyoruz.
+            onEvent = viewModel::handleEvent
         )
 
     }
 }
 
-
-// --- YENİ STATELESS COMPOSABLE ---
-// Bu fonksiyon private olabilir, çünkü sadece InventoryScreen içinde kullanılıyor.
 @Composable
 private fun InventoryContent(
     state: InventoryListContract.State,
     padding: PaddingValues,
-    onEvent: (InventoryListContract.Event) -> Unit // Olayları dışarıya bildirir.
+    onEvent: (InventoryListContract.Event) -> Unit
 ) {
     if (state.isLoading) {
         Box(
@@ -127,7 +110,7 @@ private fun InventoryContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(RefoodioTheme.spacing.large), // Bunu Dimens ile değiştirebiliriz.
+                contentPadding = PaddingValues(RefoodioTheme.spacing.large),
                 verticalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.medium)
             ) {
                 items(
@@ -136,7 +119,7 @@ private fun InventoryContent(
                 ) { product ->
                     ProductItem(
                         product = product,
-                        onDeleteClick = { onEvent(InventoryListContract.Event.DeleteProduct(product)) } // Olayı yukarı bildirir.
+                        onDeleteClick = { onEvent(InventoryListContract.Event.DeleteProduct(product)) }
                     )
                 }
             }
