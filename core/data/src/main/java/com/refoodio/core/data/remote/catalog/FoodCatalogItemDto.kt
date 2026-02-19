@@ -29,8 +29,6 @@ data class FoodCatalogItemDto(
     val nutritionalHighlight: String?,
     @SerialName("opened_shelf_life")
     val openedShelfLife: Int?,
-    @SerialName("originalIndex")
-    val originalIndex: Int?,
     @SerialName("recommended_location")
     val recommendedLocation: String?,
     @SerialName("reminder_frequency")
