@@ -5,32 +5,39 @@ import com.refoodio.core.ui.util.UiText
 
 interface InventoryAddContract {
     data class State(
-        val suggestions: List<FoodItem> = emptyList(),
         val isLoading: Boolean = false,
+        val isCameraVisible: Boolean = false,
         val searchQuery: String = "",
+        val suggestions: List<FoodItem> = emptyList(),
         val errorMessage: String? = null,
+
+        val form: InventoryForm = InventoryForm()
+    )
+
+    data class InventoryForm(
         val selectedFoodName: String = "",
+        val selectedCategory: String = "",
         val shelfLifeDays: Int = 0,
         val expiryDate: Long? = null,
         val quantity: Int = 1,
-        val selectedCategory: String = "",
-        val storageNote: String = "",
-        val isCameraVisible: Boolean = false
-
+        val storageNote: String = ""
     )
 
-    sealed class Event {
-        data class OnQueryChanged(val query: String) : Event()
-        data class OnSuggestionSelected(val food: FoodItem) : Event()
-        object OnIncrementQuantity : Event()
-        object OnDecrementQuantity : Event()
-        data class OnDateChanged(val date: Long) : Event()
-        object OnSaveProduct : Event()
+    sealed interface Event {
+        // Arama Olayları
+        data class OnQueryChanged(val query: String) : Event
+        data class OnSuggestionSelected(val food: FoodItem) : Event
 
-        object OnPermissionDenied : Event() // Yeni Event
-        data class OnBarcodeScanned(val barcode: String) : Event()
-        object OnToggleCamera : Event() // Kamerayı aç/kapat
+        // Form Olayları
+        data object OnIncrementQuantity : Event
+        data object OnDecrementQuantity : Event
+        data class OnDateChanged(val date: Long) : Event
+        data object OnSaveProduct : Event
 
+        // Kamera ve İzin Olayları
+        data object OnToggleCamera : Event
+        data class OnBarcodeScanned(val barcode: String) : Event
+        data object OnPermissionDenied : Event
     }
 
     sealed class SideEffect {

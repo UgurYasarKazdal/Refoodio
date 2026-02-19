@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.use_case.inventory.inventoryList.InventoryListUseCases
 import com.refoodio.core.domain.util.Resource
+import com.refoodio.core.domain.util.toReadableDate
 import com.refoodio.core.ui.util.UiText
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.util.asInventoryErrorText
@@ -23,9 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class InventoryViewModel @Inject constructor(
     private val inventoryListUseCases: InventoryListUseCases,
-    private val app: Application // Hilt ile Application'ı enjekte edin
+    private val app: Application
 ) : ViewModel() {
-    // ViewModel içinde:
     private val _effect = Channel<InventoryListContract.SideEffect>()
     val effect = _effect.receiveAsFlow()
 
@@ -42,34 +42,41 @@ class InventoryViewModel @Inject constructor(
             is InventoryListContract.Event.LoadProducts -> loadProducts()
             is InventoryListContract.Event.NavigateAddInventory -> {
                 viewModelScope.launch {
-                    // UI'ın LaunchedEffect ile dinlediği kanala sinyal gönderiyoruz
                     _effect.send(InventoryListContract.SideEffect.NavigateToAddInventory)
                 }
             }
         }
     }
 
-    // --- BİTİRİLMİŞ `loadProducts` FONKSİYONU ---
     private fun loadProducts() {
         inventoryListUseCases.getProducts().onEach { result ->
-            // UseCase'den gelen Resource akışını işle
             when (result) {
                 is Resource.Loading -> {
-                    // Veri henüz gelmediğinde yükleme durumunu ayarla
                     _state.update { it.copy(isLoading = true) }
                 }
 
                 is Resource.Success -> {
-                    // Başarılı veri geldiğinde listeyi ve yükleme durumunu güncelle
+                    val uiProducts = result.data.map { item ->
+                        InventoryListContract.InventoryItemUiModel(
+                            id = item.id,
+                            name = item.name,
+                            quantityText = UiText.StringResource(R.string.quantity, item.quantity),
+                            formattedDate = UiText.StringResource(
+                                R.string.add_inventory_expiry_date, item.expiryDate.toReadableDate()
+                            ),
+                            isCritical = item.isNearExpiry(),
+                            originalItem = item
+                        )
+                    }
+
                     _state.update {
                         it.copy(
-                            isLoading = false, products = result.data ?: emptyList()
+                            isLoading = false, products = uiProducts
                         )
                     }
                 }
 
                 is Resource.Error -> {
-                    // 🎯 YENİ YAPI: Enum'ı al, UiText'e çevir, String yap ve State'e bas
                     val uiText = result.errorType.asInventoryErrorText()
                     _state.update {
                         it.copy(isLoading = false, errorMessage = uiText.asString(app))
@@ -80,18 +87,14 @@ class InventoryViewModel @Inject constructor(
     }
 
 
-    // --- BİTİRİLMİŞ `deleteProduct` FONKSİYONU ---
     private fun deleteProduct(product: InventoryItem) {
-        // Bu UseCase'in de Flow<Resource<Unit>> döndürdüğünü varsayıyoruz
         inventoryListUseCases.deleteProduct(product).onEach { result ->
             when (result) {
                 is Resource.Loading -> {
-                    // İsteğe bağlı: silme işlemi sırasında da bir yükleme durumu gösterebiliriz.
                     _state.update { it.copy(isLoading = true) }
                 }
 
                 is Resource.Success -> {
-                    // Yükleme durumunu kapat. Başarı mesajı için bir SideEffect gönderilebilir.
                     _state.update { it.copy(isLoading = false) }
                     _effect.send(
                         InventoryListContract.SideEffect.ShowSnackbar(
@@ -102,7 +105,6 @@ class InventoryViewModel @Inject constructor(
 
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
-                    // 🎯 YENİ YAPI: Silme hatasını da mapper üzerinden geçiyoruz
                     val uiText = result.errorType.asInventoryErrorText()
                     _effect.send(InventoryListContract.SideEffect.ShowSnackbar(uiText))
                 }

@@ -21,4 +21,8 @@
     <string name="add_inventory_dialog_ok">Tamam</string>
     <string name="add_inventory_dialog_cancel">İptal</string>
     <string name="add_inventory_save_button">Envantere Ekle</string>
+    <string name="Delete">Sil</string>
+    <string name="quantity">Miktar: %1$s</string>
+    <string name="add_inventory_expiry_date">Son Kullanma Tarihi: %1$s</string>
+
 </resources>

@@ -35,23 +35,16 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
 
     private val _state = MutableStateFlow(InventoryAddContract.State())
 
-    // 2. Arama akışını dinleyip ana state'i güncelleyen bir yapı kur
     init {
         observeQuery()
     }
 
     private fun observeQuery() {
-        searchQuery.debounce(300)
-            .filter { it.length >= 2 }
-            .flatMapLatest { query ->
-                // Arama başladığında loading yapabilirsin
-                inventoryAddUseCases.suggestionsUseCase("$query*")
-            }
-            .onEach { results ->
-                // Gelen sonuçları ana state'e yaz
-                _state.update { it.copy(suggestions = results) }
-            }
-            .launchIn(viewModelScope)
+        searchQuery.debounce(300).filter { it.length >= 2 }.flatMapLatest { query ->
+            inventoryAddUseCases.suggestionsUseCase("$query*")
+        }.onEach { results ->
+            _state.update { it.copy(suggestions = results) }
+        }.launchIn(viewModelScope)
     }
 
     val state: StateFlow<InventoryAddContract.State> = _state.asStateFlow()
@@ -70,34 +63,34 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
             }
 
             is InventoryAddContract.Event.OnSuggestionSelected -> {
-                // Akıllı Tarih Hesaplama: Bugün + Raf Ömrü
                 val calculatedExpiry =
                     System.currentTimeMillis() + event.food.defaultShelfLife.daysToMillis
 
                 _state.update {
                     it.copy(
-                        selectedFoodName = event.food.name,
-                        shelfLifeDays = event.food.defaultShelfLife,
-                        expiryDate = calculatedExpiry,
-                        selectedCategory = event.food.category,
-                        quantity = 1, // Her yeni seçimde miktarı resetle
-                        suggestions = emptyList() // Yarış durumunu engellemek için listeyi temizle
+                        form = it.form.copy(
+                            selectedFoodName = event.food.name,
+                            shelfLifeDays = event.food.defaultShelfLife,
+                            expiryDate = calculatedExpiry,
+                            selectedCategory = event.food.category,
+                            quantity = 1,
+                        ), suggestions = emptyList()
                     )
                 }
             }
 
             InventoryAddContract.Event.OnIncrementQuantity -> {
-                _state.update { it.copy(quantity = it.quantity + 1) }
+                updateForm { form -> form.copy(quantity = form.quantity + 1) }
             }
 
             InventoryAddContract.Event.OnDecrementQuantity -> {
-                if (_state.value.quantity > 1) {
-                    _state.update { it.copy(quantity = it.quantity - 1) }
+                if (_state.value.form.quantity > 1) {
+                    updateForm { form -> form.copy(quantity = form.quantity - 1) }
                 }
             }
 
             is InventoryAddContract.Event.OnDateChanged -> {
-                _state.update { it.copy(expiryDate = event.date) }
+                updateForm { form -> form.copy(expiryDate = event.date) }
             }
 
             InventoryAddContract.Event.OnSaveProduct -> {
@@ -124,37 +117,36 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
         }
     }
 
+    private fun updateForm(update: (InventoryAddContract.InventoryForm) -> InventoryAddContract.InventoryForm) {
+        _state.update { it.copy(form = update(it.form)) }
+    }
+
     private fun searchProductByBarcode(barcode: String) {
         viewModelScope.launch {
-            // Yarış durumunu (race condition) önlemek için kilidi vuruyoruz
             _state.update { it.copy(isLoading = true) }
 
-            inventoryAddUseCases.getFoodByBarcodeUseCase(barcode)
-                .onSuccess { foodItem ->
-                    _state.update {
-                        it.copy(
-                            selectedFoodName = foodItem.name,
-                            selectedCategory = foodItem.category,
-                            isCameraVisible = false,
-                            isLoading = false
-                        )
-                    }
+            inventoryAddUseCases.getFoodByBarcodeUseCase(barcode).onSuccess { foodItem ->
+                _state.update {
+                    it.copy(
+                        form = it.form.copy(
+                            selectedFoodName = foodItem.name, selectedCategory = foodItem.category
+                        ), isCameraVisible = false, isLoading = false
+                    )
                 }
-                .onFailure { error ->
-                    _state.update { it.copy(isLoading = false) }
-                    // Hata mesajı için bir Effect tetiklenebilir
-                }
+            }.onFailure { error ->
+                _state.update { it.copy(isLoading = false) }
+            }
         }
     }
 
     fun saveProduct() {
         val currentState = _state.value
         if (currentState.isLoading) return
-        if (currentState.selectedFoodName.isBlank()) return
+        if (currentState.form.selectedFoodName.isBlank()) return
         val newItem = InventoryItem(
-            name = currentState.selectedFoodName,
-            expiryDate = currentState.expiryDate ?: System.currentTimeMillis(),
-            quantity = currentState.quantity.toDouble() // State'deki Int'i Double'a çeviriyoruz
+            name = currentState.form.selectedFoodName,
+            expiryDate = currentState.form.expiryDate ?: System.currentTimeMillis(),
+            quantity = currentState.form.quantity.toDouble()
         )
         inventoryAddUseCases.insertProduct(newItem).onEach { result ->
             when (result) {
@@ -166,19 +158,17 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            selectedFoodName = "", // Formu temizle
+                            form = InventoryAddContract.InventoryForm(),
                             suggestions = emptyList(),
                             errorMessage = null
                         )
                     }
 
-                    _effect.send(InventoryAddContract.SideEffect.NavigateBack)// Burada başarılı sinyali (Event) gönderebilirsin
-                    // 🚀 İŞTE BURASI: Başarılıysa sinyali gönder
+                    _effect.send(InventoryAddContract.SideEffect.NavigateBack)
                 }
 
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
-                    // 🎯 YENİ YAPI: SideEffect olarak Snackbar'a gönder
                     val uiText = result.errorType.asInventoryErrorText()
                 }
             }
