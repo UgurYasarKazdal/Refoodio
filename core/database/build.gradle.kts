@@ -30,32 +30,30 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    // 1. Üst modülden gelen miras (ktx, coroutines, serialization)
+    implementation(project(":core"))
+
+    // 2. Room (Veritabanı işlemleri)
+    // api kullanıyoruz ki bu modülü kullananlar Room sınıflarını görebilsin
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // 3. Dependency Injection
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
+    // 4. Testler
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    // Room
-    api(libs.androidx.room.runtime)
-    api(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    api(libs.kotlinx.serialization.json)
-
-    api(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-
-
-
 }
