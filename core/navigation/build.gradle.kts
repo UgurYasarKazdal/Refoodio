@@ -29,31 +29,30 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // 1. Üst modülden gelen miras (Serileştirme desteği rotalar için şart!)
+    implementation(project(":core"))
 
-    implementation(libs.kotlinx.serialization.json)
-
-    // Hilt Navigation
+    // 2. Hilt & Navigation Entegrasyonu
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // --- BURAYA EKLENMELİ ---
+    // 3. Compose UI (Rotaları ve NavHost'u tanımlamak için)
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.tooling.preview) // Preview için
-    implementation(libs.androidx.compose.material3) // Gelecekte Colors vb. için
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+
+    // 4. Testler
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

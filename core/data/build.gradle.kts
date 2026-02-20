@@ -28,28 +28,33 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // 1. Üst modülden gelen miras (ktx, coroutines, serialization buradan geliyor)
+    implementation(project(":core"))
 
+    // 2. Data Layer araçları
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.startup)
+
+    // 3. Bağımlılık Enjeksiyonu (Hilt kütüphanesi eklendi)
+    implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // 4. Katman bağlantıları
     implementation(project(":core:database"))
     implementation(project(":core:domain"))
     implementation(project(":core:network"))
 
+    // 5. Testler
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

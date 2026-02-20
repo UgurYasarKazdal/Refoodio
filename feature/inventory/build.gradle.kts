@@ -30,53 +30,46 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // 1. Üst modül mirası (ktx, coroutines, serialization)
+    implementation(project(":core"))
 
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    // 2. Core Katmanları
+    api(project(":core:navigation")) // Navigasyon rotaları dışarıya açık
+    implementation(project(":core:ui")) // Ortak UI bileşenleri
+    implementation(project(":core:domain")) // UseCase ve Modeller
+    implementation(project(":core:data")) // Repository implementasyonları
 
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-
-    // Compose
+    // 3. Jetpack Compose & Lifecycle
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.ui.tooling.preview)
 
-    // Lifecycle
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Hilt Navigation
+    // 4. Dependency Injection (Hilt)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // Modül ismin neyse onu yaz
-    api(project(":core:navigation"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:domain"))
-    implementation(project(":core:data"))
-
+    // 5. Test Bağımlılıkları
+    testImplementation(libs.junit)
     testImplementation(libs.mockk)
-
-    // Coroutine testleri için şart
-    testImplementation(libs.kotlinx.coroutines.test) // Unit testler için
-    androidTestImplementation(libs.kotlinx.coroutines.test) // Android (Room) testleri için
+    testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
