@@ -1,7 +1,9 @@
 package com.refoodio.core.database.entity.inventory
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.refoodio.core.domain.model.inventory.FoodUnit
 
 @Entity(tableName = "products")
 data class InventoryEntity(
@@ -9,4 +11,5 @@ data class InventoryEntity(
     val name: String,
     val expiryDate: Long,
     val quantity: Double,
+    @ColumnInfo(name = "unit_id") val unit: FoodUnit
 )

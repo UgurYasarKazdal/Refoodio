@@ -1,5 +1,6 @@
 package com.refoodio.inventory.presentation.inventory_list
 
+import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.ui.util.UiText
 
@@ -16,6 +17,7 @@ interface InventoryListContract {
         val quantityText: UiText,
         val formattedDate: UiText,
         val isCritical: Boolean,
+        val unit: FoodUnit,
         val originalItem: InventoryItem
     )
 
@@ -31,11 +33,9 @@ interface InventoryListContract {
         /**
          * @param message Gösterilecek metni içeren UiText nesnesi.
          */
-        data class ShowSnackbar(val message: UiText) :
-            SideEffect
+        data class ShowSnackbar(val message: UiText) : SideEffect
 
-        data object ProductDeleted :
-            SideEffect
+        data object ProductDeleted : SideEffect
 
         data object NavigateToAddInventory : SideEffect
     }

@@ -163,19 +163,18 @@ fun AddInventoryScreen(
                     .heightIn(max = RefoodioTheme.dimens.suggestionListMaxHeight)
             ) {
                 items(state.suggestions) { food ->
-                    Text(
-                        text = food.name, modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                focusManager.clearFocus()
+                    Text(text = food.name, modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            focusManager.clearFocus()
 
-                                viewModel.handleEvent(
-                                    InventoryAddContract.Event.OnSuggestionSelected(
-                                        food
-                                    )
+                            viewModel.handleEvent(
+                                InventoryAddContract.Event.OnSuggestionSelected(
+                                    food
                                 )
-                            }
-                            .padding(RefoodioTheme.spacing.medium))
+                            )
+                        }
+                        .padding(RefoodioTheme.spacing.medium))
                 }
             }
         }
@@ -191,8 +190,23 @@ fun AddInventoryScreen(
                     selectedCategory = state.form.selectedCategory,
                     quantity = state.form.quantity,
                     onIncrement = { viewModel.handleEvent(InventoryAddContract.Event.OnIncrementQuantity) },
-                    onDecrement = { viewModel.handleEvent(InventoryAddContract.Event.OnDecrementQuantity) })
-
+                    onDecrement = { viewModel.handleEvent(InventoryAddContract.Event.OnDecrementQuantity) },
+                    selectedUnit = state.form.unit,
+                    onUnitSelected = {
+                        viewModel.handleEvent(
+                            InventoryAddContract.Event.OnUnitSelected(
+                                it
+                            )
+                        )
+                    },
+                    onQuantitySelected = {
+                        viewModel.handleEvent(
+                            InventoryAddContract.Event.OnQuantitySelected(
+                                it
+                            )
+                        )
+                    },
+                )
                 ExpiryDateSection(
                     expiryDate = state.form.expiryDate, onDateClick = { showDatePicker = true })
             }

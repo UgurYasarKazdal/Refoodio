@@ -8,6 +8,7 @@ import com.refoodio.core.domain.use_case.inventory.inventoryList.InventoryListUs
 import com.refoodio.core.domain.util.Resource
 import com.refoodio.core.domain.util.toReadableDate
 import com.refoodio.core.ui.util.UiText
+import com.refoodio.core.ui.util.formatQuantity
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.util.asInventoryErrorText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,8 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InventoryViewModel @Inject constructor(
-    private val inventoryListUseCases: InventoryListUseCases,
-    private val app: Application
+    private val inventoryListUseCases: InventoryListUseCases, private val app: Application
 ) : ViewModel() {
     private val _effect = Channel<InventoryListContract.SideEffect>()
     val effect = _effect.receiveAsFlow()
@@ -60,12 +60,15 @@ class InventoryViewModel @Inject constructor(
                         InventoryListContract.InventoryItemUiModel(
                             id = item.id,
                             name = item.name,
-                            quantityText = UiText.StringResource(R.string.quantity, item.quantity),
+                            quantityText = UiText.StringResource(
+                                R.string.quantity,
+                                item.quantity.formatQuantity()),
                             formattedDate = UiText.StringResource(
                                 R.string.add_inventory_expiry_date, item.expiryDate.toReadableDate()
                             ),
                             isCritical = item.isNearExpiry(),
-                            originalItem = item
+                            originalItem = item,
+                            unit = item.unit
                         )
                     }
 

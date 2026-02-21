@@ -3,8 +3,10 @@ package com.refoodio.inventory.presentation.inventory_list.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -43,10 +45,20 @@ fun ProductItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = inventoryUiModel.name, style = MaterialTheme.typography.titleLarge)
-                Text(
-                    text = inventoryUiModel.quantityText.asString(),
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Row {
+                    Text(
+                        text = inventoryUiModel.quantityText.asString(),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.width(RefoodioTheme.spacing.medium))
+
+                    Text(
+                        text = stringResource(inventoryUiModel.unit.fullNameResId),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
                 Text(
                     text = inventoryUiModel.formattedDate.asString(),
                     style = MaterialTheme.typography.labelSmall,

@@ -6,7 +6,8 @@ data class InventoryItem(
     val id: Int = 0,
     val name: String,
     val expiryDate: Long,
-    val quantity: Double
+    val quantity: Double,
+    val unit: FoodUnit
 ) {
     fun isNearExpiry(): Boolean {
         val threeDaysInMillis = 3.daysToMillis
