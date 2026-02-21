@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.RemoveCircle
@@ -19,35 +20,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.refoodio.core.domain.model.inventory.FoodUnit
+import com.refoodio.core.ui.components.RefoodioDropdown
 import com.refoodio.core.ui.theme.RefoodioTheme
+import com.refoodio.core.ui.util.formatQuantity
 import com.refoodio.inventory.R
 
 @Composable
 fun SelectedProductCard(
     selectedFoodName: String,
     selectedCategory: String,
-    quantity: Int,
+    quantity: Double,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
+    selectedUnit: FoodUnit,
+    onUnitSelected: (FoodUnit) -> Unit,
+    onQuantitySelected: (Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium
+        modifier = modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium
     ) {
         Column(modifier = Modifier.padding(RefoodioTheme.spacing.large)) {
             Text(
                 text = stringResource(
-                    R.string.add_inventory_selected_label,
-                    selectedFoodName
-                ),
-                style = MaterialTheme.typography.titleMedium
+                    R.string.add_inventory_selected_label, selectedFoodName
+                ), style = MaterialTheme.typography.titleMedium
             )
 
             Text(
                 text = stringResource(
-                    R.string.add_inventory_category_label,
-                    selectedCategory
+                    R.string.add_inventory_category_label, selectedCategory
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -67,9 +70,11 @@ fun SelectedProductCard(
                     )
                 }
 
-                Text(
-                    text = "$quantity",
-                    style = MaterialTheme.typography.titleLarge
+                RefoodioDropdown(
+                    selectedUnit.generateScale(),
+                    selectedItem = quantity,
+                    onItemSelected = { onQuantitySelected(it) },
+                    itemLabel = { it.formatQuantity() },
                 )
 
                 IconButton(onClick = onIncrement) {
@@ -79,6 +84,15 @@ fun SelectedProductCard(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
+
+                Spacer(modifier = Modifier.width(RefoodioTheme.spacing.medium))
+
+                RefoodioDropdown(
+                    items = FoodUnit.entries,
+                    selectedItem = selectedUnit,
+                    onItemSelected = { onUnitSelected(it) },
+                    itemLabel = { stringResource(id = it.fullNameResId) })
+
             }
         }
     }

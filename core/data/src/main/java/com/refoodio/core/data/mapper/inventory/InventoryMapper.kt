@@ -8,7 +8,8 @@ fun InventoryEntity.toDomain(): InventoryItem {
         id = id,
         name = name,
         expiryDate = expiryDate,
-        quantity = quantity
+        quantity = quantity,
+        unit = unit
     )
 }
 
@@ -17,6 +18,7 @@ fun InventoryItem.toEntity(): InventoryEntity {
         id = id,
         name = name,
         expiryDate = expiryDate,
-        quantity = quantity
+        quantity = quantity,
+        unit = unit
     )
 }

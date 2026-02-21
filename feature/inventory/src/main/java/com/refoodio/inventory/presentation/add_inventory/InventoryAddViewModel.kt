@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.round
 
 @HiltViewModel
 class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases: InventoryAddUseCases) :
@@ -73,19 +74,23 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
                             shelfLifeDays = event.food.defaultShelfLife,
                             expiryDate = calculatedExpiry,
                             selectedCategory = event.food.category,
-                            quantity = 1,
+                            quantity = 1.0,
                         ), suggestions = emptyList()
                     )
                 }
             }
 
             InventoryAddContract.Event.OnIncrementQuantity -> {
-                updateForm { form -> form.copy(quantity = form.quantity + 1) }
+                val nextValue = _state.value.form.quantity + _state.value.form.unit.step
+                // Round to one decimal place
+                updateForm { form -> form.copy(quantity = round(nextValue * 10) / 10.0) }
             }
 
             InventoryAddContract.Event.OnDecrementQuantity -> {
+                val nextValue = _state.value.form.quantity + _state.value.form.unit.step
+                // Round to one decimal place
                 if (_state.value.form.quantity > 1) {
-                    updateForm { form -> form.copy(quantity = form.quantity - 1) }
+                    updateForm { form -> form.copy(quantity = round(nextValue * 10) / 10.0) }
                 }
             }
 
@@ -95,6 +100,14 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
 
             InventoryAddContract.Event.OnSaveProduct -> {
                 saveProduct()
+            }
+
+            is InventoryAddContract.Event.OnUnitSelected -> {
+                updateForm { form -> form.copy(unit = event.unit) }
+            }
+
+            is InventoryAddContract.Event.OnQuantitySelected -> {
+                updateForm { form -> form.copy(quantity = event.unit) }
             }
 
             is InventoryAddContract.Event.OnBarcodeScanned -> {
@@ -146,7 +159,8 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
         val newItem = InventoryItem(
             name = currentState.form.selectedFoodName,
             expiryDate = currentState.form.expiryDate ?: System.currentTimeMillis(),
-            quantity = currentState.form.quantity.toDouble()
+            quantity = currentState.form.quantity.toDouble(),
+            unit = currentState.form.unit
         )
         inventoryAddUseCases.insertProduct(newItem).onEach { result ->
             when (result) {

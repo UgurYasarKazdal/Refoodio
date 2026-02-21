@@ -1,6 +1,7 @@
 package com.refoodio.inventory.presentation.add_inventory
 
 import com.refoodio.core.domain.model.catalog.FoodItem
+import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.ui.util.UiText
 
 interface InventoryAddContract {
@@ -19,8 +20,9 @@ interface InventoryAddContract {
         val selectedCategory: String = "",
         val shelfLifeDays: Int = 0,
         val expiryDate: Long? = null,
-        val quantity: Int = 1,
-        val storageNote: String = ""
+        val quantity: Double = 1.0,
+        val storageNote: String = "",
+        val unit: FoodUnit = FoodUnit.KILOGRAM
     )
 
     sealed interface Event {
@@ -33,6 +35,8 @@ interface InventoryAddContract {
         data object OnDecrementQuantity : Event
         data class OnDateChanged(val date: Long) : Event
         data object OnSaveProduct : Event
+        data class OnUnitSelected(val unit: FoodUnit) : Event
+        data class OnQuantitySelected(val unit: Double) : Event
 
         // Kamera ve İzin Olayları
         data object OnToggleCamera : Event

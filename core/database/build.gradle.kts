@@ -41,6 +41,7 @@ android {
 dependencies {
     // 1. Üst modülden gelen miras (ktx, coroutines, serialization)
     implementation(project(":core"))
+    implementation(project(":core:domain"))
 
     // 2. Room (Veritabanı işlemleri)
     // api kullanıyoruz ki bu modülü kullananlar Room sınıflarını görebilsin

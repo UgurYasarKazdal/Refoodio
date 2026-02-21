@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="label_select_unit">Birim Seçin</string>
+
+    <string name="unit_gram_full">Gram</string>
+    <string name="unit_kilogram_full">Kilogram</string>
+    <string name="unit_liter_full">Litre</string>
+    <string name="unit_milliliter_full">Mililitre</string>
+    <string name="unit_piece_full">Adet</string>
+    <string name="unit_bunch_full">Demet</string>
+    <string name="unit_pack_full">Paket</string>
+    <string name="unit_cup_full">Su Bardağı</string>
+    <string name="unit_tablespoon_full">Yemek Kaşığı</string>
+    <string name="unit_teaspoon_full">Tatlı Kaşığı</string>
+
+    <string name="unit_g_short">g</string>
+    <string name="unit_kg_short">kg</string>
+    <string name="unit_l_short">l</string>
+    <string name="unit_ml_short">ml</string>
+    <string name="unit_pc_short">ad.</string>
+    <string name="unit_bunch_short">dem.</string>
+    <string name="unit_pack_short">pkt.</string>
+    <string name="unit_cup_short">bardak</string>
+    <string name="unit_tbsp_short">Y.K.</string>
+    <string name="unit_tsp_short">T.K.</string>
+</resources>
