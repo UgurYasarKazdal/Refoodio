@@ -1,13 +1,14 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.google.dagger.hilt.android)
+    alias(libs.plugins.kotlin.compose) // Bu plugin Kotlin 2.0+ için ŞART
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kotlin.compose)
-
 }
 
 android {
-    namespace = "com.refoodio.core.navigation"
+    namespace = "com.refoodio.home"
     compileSdk {
         version = release(36)
     }
@@ -35,16 +36,20 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
 }
 
 dependencies {
-    // 1. Üst modülden gelen miras (Serileştirme desteği rotalar için şart!)
+    // 1. Üst modül mirası (ktx, coroutines, serialization)
     implementation(project(":core"))
 
-    // 2. Hilt & Navigation Entegrasyonu
-    implementation(libs.androidx.hilt.navigation.compose)
+    // 2. Core Katmanları
+    api(project(":core:navigation")) // Navigasyon rotaları dışarıya açık
+    implementation(project(":core:ui")) // Ortak UI bileşenleri
+    implementation(project(":core:domain")) // UseCase ve Modeller
+    implementation(project(":core:data")) // Repository implementasyonları
 
-    // 3. Compose UI (Rotaları ve NavHost'u tanımlamak için)
+    // 3. Jetpack Compose & Lifecycle
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     implementation(libs.androidx.compose.ui)
@@ -52,8 +57,19 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
-    // 4. Testler
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // 4. Dependency Injection (Hilt)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // 5. Test Bağımlılıkları
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
