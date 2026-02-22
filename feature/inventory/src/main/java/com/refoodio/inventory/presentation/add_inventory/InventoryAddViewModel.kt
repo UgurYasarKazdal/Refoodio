@@ -87,7 +87,7 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
             }
 
             InventoryAddContract.Event.OnDecrementQuantity -> {
-                val nextValue = _state.value.form.quantity + _state.value.form.unit.step
+                val nextValue = _state.value.form.quantity - _state.value.form.unit.step
                 // Round to one decimal place
                 if (_state.value.form.quantity > 1) {
                     updateForm { form -> form.copy(quantity = round(nextValue * 10) / 10.0) }
