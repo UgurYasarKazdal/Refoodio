@@ -6,7 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 
 @Composable
-fun RefoodioNavHost(
+internal fun RefoodioNavHost(
     navController: NavHostController,
     navEntries: Set<FeatureNavEntry>,
     modifier: Modifier = Modifier

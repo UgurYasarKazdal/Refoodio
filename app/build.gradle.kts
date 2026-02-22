@@ -67,6 +67,9 @@ dependencies {
 
     // Feature modülleri (Compile-time güvenliği için runtimeOnly)
     runtimeOnly(project(":feature:inventory"))
+    runtimeOnly(project(":feature:home"))
+    runtimeOnly(project(":feature:recipe"))
+    runtimeOnly(project(":feature:settings"))
 
     // Debug ve Test (İsteğe bağlı, app modülünde minimumda tutulmalı)
     debugImplementation(libs.androidx.compose.ui.tooling)

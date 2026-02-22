@@ -8,4 +8,14 @@ object NavigationRoutes {
 
     @Serializable
     object InventoryAddRoute
+
+    @Serializable
+    object RecipeRoute
+
+    @Serializable
+    object SettingsRoute
+
+    @Serializable
+    object HomeRoute
 }
+

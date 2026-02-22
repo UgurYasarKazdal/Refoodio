@@ -13,8 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.refoodio.core.navigation.BottomNavigation
 import com.refoodio.core.navigation.FeatureNavEntry
-import com.refoodio.core.navigation.RefoodioNavHost
 import com.refoodio.core.ui.theme.RefoodioTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
                         .windowInsetsPadding(WindowInsets.safeDrawing),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    RefoodioNavHost(navController, navEntries)
+                    BottomNavigation(navController, navEntries)
                 }
             }
         }

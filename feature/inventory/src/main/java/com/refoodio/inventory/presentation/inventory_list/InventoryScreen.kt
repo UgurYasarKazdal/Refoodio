@@ -1,5 +1,6 @@
 package com.refoodio.inventory.presentation.inventory_list
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,6 +35,7 @@ import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.components.ProductItem
 import kotlinx.coroutines.launch
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun InventoryScreen(
     viewModel: InventoryViewModel = hiltViewModel(), onNavigateToAddInventory: () -> Unit
