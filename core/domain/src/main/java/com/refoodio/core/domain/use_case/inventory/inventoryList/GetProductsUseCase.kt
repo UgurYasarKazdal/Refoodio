@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.map
 
 class GetProductsUseCase(private val repository: InventoryRepository) {
     operator fun invoke(): Flow<InventoryResource<List<InventoryItem>>> {
-        return repository.getAllProducts()
-            .map { it.sortedBy { item -> item.expiryDate } }
-            .distinctUntilChanged()
-            .asResource()
+        return repository.getAllProducts().map { it.sortedBy { item -> item.expiryDate } }
+            .distinctUntilChanged().asResource()
     }
 }
