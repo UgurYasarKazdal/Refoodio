@@ -1,6 +1,7 @@
 package com.refoodio.core.network.di
 
 import com.refoodio.core.network.api.FoodApi
+import com.refoodio.core.network.api.GeminiApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +15,13 @@ object NetworkServiceModule {
 
     @Provides
     @Singleton
-    fun provideFoodApi(retrofit: Retrofit): FoodApi {
+    fun provideFoodRetrofit(@FoodApiRetrofit retrofit: Retrofit): FoodApi {
         return retrofit.create(FoodApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeminiRetrofit(@GeminiApiRetrofit retrofit: Retrofit): GeminiApiService {
+        return retrofit.create(GeminiApiService::class.java)
     }
 }

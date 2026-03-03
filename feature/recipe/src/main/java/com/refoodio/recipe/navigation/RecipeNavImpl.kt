@@ -3,7 +3,7 @@ package com.refoodio.recipe.navigation
 import androidx.navigation.compose.composable
 import com.refoodio.core.navigation.FeatureNavEntry
 import com.refoodio.core.navigation.NavigationRoutes
-import com.refoodio.recipe.presentation.RecipeScreen
+import com.refoodio.recipe.presentation.RecipeWizardScreen
 import javax.inject.Inject
 
 internal class RecipeNavImpl @Inject constructor() : FeatureNavEntry {
@@ -12,7 +12,7 @@ internal class RecipeNavImpl @Inject constructor() : FeatureNavEntry {
         navController: androidx.navigation.NavHostController
     ) {
         navGraphBuilder.composable<NavigationRoutes.RecipeRoute> {
-            RecipeScreen()
+            RecipeWizardScreen()
         }
     }
 }
