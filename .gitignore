@@ -3,5 +3,5 @@
 /.gradle/
 /.idea/
 .DS_Store
-.DS_Store
-.DS_Store
+local.properties
+*.properties

@@ -1,5 +1,6 @@
 package com.refoodio.core.data.repository.recipe
 
+import com.refoodio.core.data.BuildConfig
 import com.refoodio.core.data.mapper.recipe.parseGeminiResponse
 import com.refoodio.core.domain.model.recipe.Recipe
 import com.refoodio.core.domain.model.recipe.RecipePreferences
@@ -29,7 +30,7 @@ class RecipeRepositoryImpl @Inject constructor(
 
             // 3. API Çağrısı Yap (generateContent)
             val response = geminiApi.generateContent(
-                apiKey = "AIzaSyA91ojZTNbqiSSpjlHTWRvU0R2W_G9-9cw",
+                apiKey = BuildConfig.GEMINI_API_KEY,
                 request = request
             )
 

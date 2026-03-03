@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -10,12 +12,22 @@ android {
     compileSdk {
         version = release(36)
     }
-
+    buildFeatures {
+        buildConfig = true
+    }
     defaultConfig {
         minSdk = 29
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+
+        val properties = Properties()
+        val file = rootProject.file("local.properties")
+        if (file.exists()) { properties.load(file.inputStream()) }
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"${properties.getProperty("GEMINI_API_KEY")}\"")
+
     }
 
     buildTypes {
