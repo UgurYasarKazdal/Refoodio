@@ -41,7 +41,19 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(json: Json, okHttpClient: OkHttpClient): Retrofit {
+    @GeminiApiRetrofit
+    fun provideGeminiRetrofit(json: Json, okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://generativelanguage.googleapis.com/")
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @FoodApiRetrofit
+    fun provideFoodRetrofit(json: Json, okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://tr.openfoodfacts.org/")
             .client(okHttpClient)

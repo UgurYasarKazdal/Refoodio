@@ -4,8 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ProductResponseDto(
-    val status: Int,
-    val product: ProductDto? = null
+    val status: Int, val product: ProductDto? = null
 )
 
 @Serializable
@@ -16,4 +15,4 @@ data class ProductDto(
     val image_url: String? = null,
     val product_name_tr: String? = null,
 
-)
+    )
