@@ -9,16 +9,16 @@ class FakeInventoryRepository : InventoryRepository {
     private val products = mutableListOf<InventoryItem>()
     private val productsFlow = MutableStateFlow<List<InventoryItem>>(emptyList())
 
-    override fun getAllProducts(): Flow<List<InventoryItem>> {
+    override fun getAllInventories(): Flow<List<InventoryItem>> {
         return productsFlow
     }
 
-    override suspend fun addProduct(product: InventoryItem) {
+    override suspend fun addInventory(product: InventoryItem) {
         products.add(product)
         productsFlow.emit(ArrayList(products)) // Liste kopyasını gönderiyoruz
     }
 
-    override suspend fun deleteProduct(product: InventoryItem) {
+    override suspend fun deleteInventory(product: InventoryItem) {
         products.remove(product)
         productsFlow.emit(ArrayList(products))
     }

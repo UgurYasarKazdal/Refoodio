@@ -32,7 +32,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
-import com.refoodio.inventory.presentation.inventory_list.components.ProductItem
+import com.refoodio.inventory.presentation.inventory_list.components.InventoryItem
 import kotlinx.coroutines.launch
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -58,8 +58,8 @@ fun InventoryScreen(
 
                 }
 
-                is InventoryListContract.SideEffect.ProductDeleted -> {
-                    val message = context.getString(R.string.product_deleted_successfully)
+                is InventoryListContract.SideEffect.InventoryDeleted -> {
+                    val message = context.getString(R.string.inventory_deleted_successfully)
                     scope.launch {
                         snackbarHostState.showSnackbar(message = message)
 
@@ -101,7 +101,7 @@ private fun InventoryContent(
         }
     } else {
 
-        if (state.products.isEmpty()) {
+        if (state.inventories.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -119,10 +119,10 @@ private fun InventoryContent(
                 verticalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.medium)
             ) {
                 items(
-                    items = state.products, key = { it.id ?: it.hashCode() }) { product ->
-                    ProductItem(
-                        inventoryUiModel = product,
-                        onDeleteClick = { onEvent(InventoryListContract.Event.DeleteProduct(product.originalItem)) })
+                    items = state.inventories, key = { it.id ?: it.hashCode() }) { inventoryItem ->
+                    InventoryItem(
+                        inventoryUiModel = inventoryItem,
+                        onDeleteClick = { onEvent(InventoryListContract.Event.DeleteInventory(inventoryItem.originalItem)) })
                 }
             }
         }

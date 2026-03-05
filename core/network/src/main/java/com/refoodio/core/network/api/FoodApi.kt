@@ -1,12 +1,12 @@
 package com.refoodio.core.network.api
 
-import com.refoodio.core.network.dto.inventory.ProductResponseDto
+import com.refoodio.core.network.dto.inventory.BarcodeInventoryResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface FoodApi {
     @GET("api/v2/product/{barcode}.json")
-    suspend fun getProductByBarcode(
+    suspend fun getInventoryByBarcode(
         @Path("barcode") barcode: String
-    ): ProductResponseDto
+    ): BarcodeInventoryResponseDto
 }

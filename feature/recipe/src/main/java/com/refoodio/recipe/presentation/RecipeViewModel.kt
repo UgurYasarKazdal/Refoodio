@@ -28,14 +28,14 @@ class RecipeViewModel @Inject constructor(
 
     private fun loadIngredients() {
         viewModelScope.launch {
-            recipeUseCases.getProductsUseCase().collect { resource ->
+            recipeUseCases.getInventoriesUseCase().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
                         val items = resource.data.map { domainModel ->
                             IngredientItem(
                                 id = domainModel.id.toString(),
                                 name = domainModel.name,
-                                //TODO: Buraya kategoriler gelecek, products tabloya eklenmeli,
+                                //TODO: Buraya kategoriler gelecek,
                                 category = domainModel.name,
                                 isExpiredSoon = domainModel.isNearExpiry(), // 3 günden az kalanlar
                                 isSelected = domainModel.isNearExpiry()     // Otomatik seçim mantığı

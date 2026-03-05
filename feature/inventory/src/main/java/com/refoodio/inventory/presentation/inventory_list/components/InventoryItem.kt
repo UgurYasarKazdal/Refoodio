@@ -25,7 +25,7 @@ import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 @Composable
-fun ProductItem(
+fun InventoryItem(
     inventoryUiModel: InventoryListContract.InventoryItemUiModel,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier

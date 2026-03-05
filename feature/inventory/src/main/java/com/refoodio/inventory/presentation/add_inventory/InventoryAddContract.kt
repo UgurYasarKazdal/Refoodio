@@ -36,7 +36,7 @@ interface InventoryAddContract {
         data object OnIncrementQuantity : Event
         data object OnDecrementQuantity : Event
         data class OnDateChanged(val date: Long) : Event
-        data object OnSaveProduct : Event
+        data object OnSaveInventory : Event
         data class OnUnitSelected(val unit: FoodUnit) : Event
         data class OnQuantitySelected(val unit: Double) : Event
 

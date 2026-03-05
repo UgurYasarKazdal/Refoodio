@@ -101,8 +101,8 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
                 updateForm { form -> form.copy(expiryDate = event.date) }
             }
 
-            InventoryAddContract.Event.OnSaveProduct -> {
-                saveProduct()
+            InventoryAddContract.Event.OnSaveInventory -> {
+                saveInventory()
             }
 
             is InventoryAddContract.Event.OnUnitSelected -> {
@@ -114,7 +114,7 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
             }
 
             is InventoryAddContract.Event.OnBarcodeScanned -> {
-                searchProductByBarcode(event.barcode)
+                searchInventoryByBarcode(event.barcode)
             }
 
             is InventoryAddContract.Event.OnToggleCamera -> {
@@ -137,7 +137,7 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
         _state.update { it.copy(form = update(it.form)) }
     }
 
-    private fun searchProductByBarcode(barcode: String) {
+    private fun searchInventoryByBarcode(barcode: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
@@ -157,7 +157,7 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
         }
     }
 
-    fun saveProduct() {
+    fun saveInventory() {
         val currentState = _state.value
         if (currentState.isLoading) return
         if (currentState.form.selectedFoodName.isBlank()) return
@@ -168,7 +168,7 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
             unit = currentState.form.unit,
             category = currentState.form.category,
         )
-        inventoryAddUseCases.insertProduct(newItem).onEach { result ->
+        inventoryAddUseCases.insertInventory(newItem).onEach { result ->
             when (result) {
                 is Resource.Loading -> {
                     _state.update { it.copy(isLoading = true) }

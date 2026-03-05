@@ -27,7 +27,7 @@ import com.refoodio.core.ui.util.formatQuantity
 import com.refoodio.inventory.R
 
 @Composable
-fun SelectedProductCard(
+fun SelectedInventoryCard(
     selectedFoodName: String,
     selectedCategory: String,
     quantity: Double,

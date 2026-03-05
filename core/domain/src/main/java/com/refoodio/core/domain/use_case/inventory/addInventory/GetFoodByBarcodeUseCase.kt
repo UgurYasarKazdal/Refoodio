@@ -11,6 +11,6 @@ class GetFoodByBarcodeUseCase constructor(
             return Result.failure(Exception("Barkod boş olamaz"))
         }
 
-        return repository.getProductByBarcode(barcode)
+        return repository.getBarcodeInventory(barcode)
     }
 }

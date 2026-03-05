@@ -4,12 +4,12 @@
     <string name="error_quantity_must_be_greater_than_zero">Quantity must be greater than zero!</string>
     <string name="error_invalid_quantity">Invalid quantity</string>
     <string name="error_unknown">Unknown Error</string>
-    <string name="product_deleted_successfully">Product deleted successfully!</string>
-    <string name="product_added_successfully">Product Added Successfully!</string>
+    <string name="inventory_deleted_successfully">Inventory deleted successfully!</string>
+    <string name="product_added_successfully">Inventory Added Successfully!</string>
     <string name="add">Add</string>
     <string name="empty_kitchen_message">Kitchen is empty, let\'s go shopping! 🛒</string>
     <string name="need_permission_to_camera">Barkod taramak için kamera izni gerekiyor</string>
-    <string name="add_inventory_search_label">Search Product (e.g. Yogurt)</string>
+    <string name="add_inventory_search_label">Search Inventory (e.g. Yogurt)</string>
     <string name="add_inventory_barcode_content_desc">Scan Barcode</string>
     <string name="add_inventory_close_content_desc">Close</string>
     <string name="add_inventory_selected_label">Selected: %1$s</string>

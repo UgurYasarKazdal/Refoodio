@@ -9,18 +9,18 @@ import com.refoodio.core.domain.util.asResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class InsertProductUseCase(
+class InsertInventoryUseCase(
     private val repository: InventoryRepository,
-    private val validateProduct: ValidateInventoryUseCase
+    private val validateInventory: ValidateInventoryUseCase
 ) {
-    operator fun invoke(product: InventoryItem): Flow<InventoryResource<Unit>> = flow {
-        val validation = validateProduct.execute(product)
+    operator fun invoke(inventoryItem: InventoryItem): Flow<InventoryResource<Unit>> = flow {
+        val validation = validateInventory.execute(inventoryItem)
 
         if (!validation.successful) {
             throw ValidationException(errorType = validation.errorType ?: CommonError.UNKNOWN_ERROR)
         }
 
-        emit(repository.addProduct(product))
+        emit(repository.addInventory(inventoryItem))
 
     }.asResource()
 }

@@ -1,10 +1,10 @@
 package com.refoodio.core.data.mapper.inventory
 
-import com.refoodio.core.network.dto.inventory.ProductDto
+import com.refoodio.core.network.dto.inventory.BarcodeInventoryDto
 import com.refoodio.core.domain.model.catalog.FoodItem
 import com.refoodio.core.domain.model.recipe.FoodCategory
 
-fun ProductDto.toDomainModel(): FoodItem {
+fun BarcodeInventoryDto.toDomainModel(): FoodItem {
     return FoodItem(
         id = 0, // Veritabanına kaydedilirken otomatik artan ID alacaktır
         name = this.product_name ?: "Bilinmeyen Ürün",

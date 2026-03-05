@@ -2,7 +2,7 @@ package com.refoodio.recipe.di
 
 import com.refoodio.core.domain.repository.InventoryRepository
 import com.refoodio.core.domain.repository.recipe.RecipeRepository
-import com.refoodio.core.domain.use_case.inventory.inventoryList.GetProductsUseCase
+import com.refoodio.core.domain.use_case.inventory.inventoryList.GetInventoriesUseCase
 import com.refoodio.core.domain.use_case.recipe.GenerateRecipeUseCase
 import com.refoodio.core.domain.use_case.recipe.RecipeUseCases
 import dagger.Module
@@ -18,7 +18,7 @@ object RecipeUseCaseModule {
         recipeRepository: RecipeRepository, inventoryRepository: InventoryRepository
     ): RecipeUseCases {
         return RecipeUseCases(
-            getProductsUseCase = GetProductsUseCase(inventoryRepository),
+            getInventoriesUseCase = GetInventoriesUseCase(inventoryRepository),
             generateRecipeUseCase = GenerateRecipeUseCase(recipeRepository)
         )
     }

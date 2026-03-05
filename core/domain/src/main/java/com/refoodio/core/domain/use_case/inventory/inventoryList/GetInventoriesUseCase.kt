@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-class GetProductsUseCase(private val repository: InventoryRepository) {
+class GetInventoriesUseCase(private val repository: InventoryRepository) {
     operator fun invoke(): Flow<InventoryResource<List<InventoryItem>>> {
-        return repository.getAllProducts().map { it.sortedBy { item -> item.expiryDate } }
+        return repository.getAllInventories().map { it.sortedBy { item -> item.expiryDate } }
             .distinctUntilChanged().asResource()
     }
 }

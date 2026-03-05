@@ -4,7 +4,7 @@
     <string name="error_quantity_must_be_greater_than_zero">Miktar 0\'dan büyük olmalı!</string>
     <string name="error_invalid_quantity">Geçersiz miktar!</string>
     <string name="error_unknown">Bilinmeyen hata</string>
-    <string name="product_deleted_successfully">Ürün başarıyla silindi!</string>
+    <string name="inventory_deleted_successfully">Ürün başarıyla silindi!</string>
     <string name="product_added_successfully">Ürün başarıyla kaydedildi!</string>
     <string name="add">Ekle</string>
     <string name="empty_kitchen_message">Mutfak boş, haydi alışverişe! 🛒</string>

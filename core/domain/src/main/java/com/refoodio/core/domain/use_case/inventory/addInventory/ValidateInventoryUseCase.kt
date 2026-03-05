@@ -5,14 +5,14 @@ import com.refoodio.core.domain.use_case.inventory.InventoryErrors
 import com.refoodio.core.domain.util.ValidationResult
 
 class ValidateInventoryUseCase {
-    fun execute(product: InventoryItem): ValidationResult {
-        if (product.name.isBlank()) {
+    fun execute(inventoryItem: InventoryItem): ValidationResult {
+        if (inventoryItem.name.isBlank()) {
             return ValidationResult(
                 successful = false,
                 errorType = InventoryErrors.EMPTY_NAME
             )
         }
-        if (product.quantity <= 0) {
+        if (inventoryItem.quantity <= 0) {
             return ValidationResult(
                 successful = false,
                 errorType = InventoryErrors.INVALID_QUANTITY

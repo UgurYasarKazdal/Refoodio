@@ -1,8 +1,8 @@
 package com.refoodio.core.domain.use_case.recipe
 
-import com.refoodio.core.domain.use_case.inventory.inventoryList.GetProductsUseCase
+import com.refoodio.core.domain.use_case.inventory.inventoryList.GetInventoriesUseCase
 
 data class RecipeUseCases(
-    val getProductsUseCase: GetProductsUseCase,
+    val getInventoriesUseCase: GetInventoriesUseCase,
     val generateRecipeUseCase: GenerateRecipeUseCase
 )

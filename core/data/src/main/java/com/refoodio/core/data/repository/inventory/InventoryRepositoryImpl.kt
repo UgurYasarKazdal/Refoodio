@@ -16,21 +16,21 @@ class InventoryRepositoryImpl @Inject constructor(
     private val inventoryDao: InventoryDao
 ) : InventoryRepository {
 
-    override fun getAllProducts(): Flow<List<InventoryItem>> {
-        return inventoryDao.getProductsFlow().map { entities ->
+    override fun getAllInventories(): Flow<List<InventoryItem>> {
+        return inventoryDao.getInventoriesFlow().map { entities ->
             entities.map { it.toDomain() }
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun addProduct(product: InventoryItem) {
+    override suspend fun addInventory(inventoryItem: InventoryItem) {
         withContext(Dispatchers.IO) {
-            inventoryDao.insertProduct(product.toEntity())
+            inventoryDao.insertInventory(inventoryItem.toEntity())
         }
     }
 
-    override suspend fun deleteProduct(product: InventoryItem) {
+    override suspend fun deleteInventory(inventoryItem: InventoryItem) {
         withContext(Dispatchers.IO) {
-            inventoryDao.deleteProduct(product.toEntity())
+            inventoryDao.deleteInventory(inventoryItem.toEntity())
         }
     }
 }
