@@ -3,6 +3,7 @@ package com.refoodio.core.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.refoodio.core.database.converter.FoodCategoryConverter
 import com.refoodio.core.database.converter.FoodUnitConverter
 import com.refoodio.core.database.converter.StringListTypeConverter
 import com.refoodio.core.database.dao.catalog.FoodCatalogDao
@@ -14,9 +15,11 @@ import com.refoodio.core.database.entity.inventory.InventoryEntity
 
 @Database(
     entities = [InventoryEntity::class, FoodCatalogItemEntity::class, FoodCatalogFtsEntity::class],
-    version = 3
+    version = 4
 )
-@TypeConverters(StringListTypeConverter::class, FoodUnitConverter::class)
+@TypeConverters(
+    StringListTypeConverter::class, FoodUnitConverter::class, FoodCategoryConverter::class
+)
 abstract class RefoodioDatabase : RoomDatabase() {
     abstract fun inventoryDao(): InventoryDao
 

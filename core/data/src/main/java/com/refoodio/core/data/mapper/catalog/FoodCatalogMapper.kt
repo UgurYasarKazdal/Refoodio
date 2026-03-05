@@ -3,6 +3,7 @@ package com.refoodio.core.data.mapper.catalog
 import com.refoodio.core.data.remote.catalog.FoodCatalogItemDto
 import com.refoodio.core.database.entity.catalog.FoodCatalogItemEntity
 import com.refoodio.core.domain.model.catalog.FoodItem
+import com.refoodio.core.domain.model.recipe.FoodCategory
 
 fun FoodCatalogItemEntity.toDomain(): FoodItem {
     return FoodItem(
@@ -20,7 +21,8 @@ fun FoodCatalogItemEntity.toDomain(): FoodItem {
         nutritionalHighlight = this.nutritionalHighlight.orEmpty(),
         recommendedLocation = this.recommendedLocation.orEmpty(),
         storageNote = this.storageNote.orEmpty(),
-        unit = this.unit ?: "pcs"
+        unit = this.unit ?: "pcs",
+        categoryId = this.categoryId ?: FoodCategory.OTHER.id
     )
 }
 
@@ -44,6 +46,8 @@ fun FoodCatalogItemDto.toEntity(): FoodCatalogItemEntity {
         storageNote = this.storageNote,
         storageTempIdeal = this.storageTempIdeal,
         suggestedPreparation = this.suggestedPreparation,
-        unit = this.unit
+        unit = this.unit,
+        categoryId = this.categoryId
+
     )
 }

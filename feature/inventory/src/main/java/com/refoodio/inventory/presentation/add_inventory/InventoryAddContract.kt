@@ -2,6 +2,7 @@ package com.refoodio.inventory.presentation.add_inventory
 
 import com.refoodio.core.domain.model.catalog.FoodItem
 import com.refoodio.core.domain.model.inventory.FoodUnit
+import com.refoodio.core.domain.model.recipe.FoodCategory
 import com.refoodio.core.ui.util.UiText
 
 interface InventoryAddContract {
@@ -22,7 +23,8 @@ interface InventoryAddContract {
         val expiryDate: Long? = null,
         val quantity: Double = 1.0,
         val storageNote: String = "",
-        val unit: FoodUnit = FoodUnit.KILOGRAM
+        val unit: FoodUnit = FoodUnit.KILOGRAM,
+        val category: FoodCategory = FoodCategory.OTHER //TODO:Kategori seçmesi için dropdown koyulacak
     )
 
     sealed interface Event {
