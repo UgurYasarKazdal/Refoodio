@@ -26,6 +26,8 @@ data class FoodCatalogItemEntity(
 
     @ColumnInfo(name = "alternative_names")
     val alternativeNames: List<String>?, // TypeConverter gerektirir
+    @ColumnInfo(name = "category_id")
+    val categoryId: Int?,
 
     @ColumnInfo(name = "category")
     val category: String?,

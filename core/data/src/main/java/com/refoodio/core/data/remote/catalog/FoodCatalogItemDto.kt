@@ -9,6 +9,8 @@ data class FoodCatalogItemDto(
     val alternativeNames: List<String?>?,
     @SerialName("category")
     val category: String?,
+    @SerialName("categoryId")
+    val categoryId: Int?,
     @SerialName("common_pairings")
     val commonPairings: List<String?>?,
     @SerialName("default_shelf_life")
