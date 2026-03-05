@@ -3,6 +3,7 @@ package com.refoodio.inventory.presentation.add_inventory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.refoodio.core.domain.model.inventory.InventoryItem
+import com.refoodio.core.domain.model.recipe.FoodCategory
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.core.domain.util.Resource
 import com.refoodio.core.domain.util.daysToMillis
@@ -75,6 +76,8 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
                             expiryDate = calculatedExpiry,
                             selectedCategory = event.food.category,
                             quantity = 1.0,
+                            category = FoodCategory.fromId(event.food.categoryId)
+
                         ), suggestions = emptyList()
                     )
                 }
@@ -142,7 +145,9 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
                 _state.update {
                     it.copy(
                         form = it.form.copy(
-                            selectedFoodName = foodItem.name, selectedCategory = foodItem.category
+                            selectedFoodName = foodItem.name,
+                            selectedCategory = foodItem.category,
+                            category = FoodCategory.fromId(foodItem.categoryId)
                         ), isCameraVisible = false, isLoading = false
                     )
                 }
@@ -160,7 +165,8 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
             name = currentState.form.selectedFoodName,
             expiryDate = currentState.form.expiryDate ?: System.currentTimeMillis(),
             quantity = currentState.form.quantity.toDouble(),
-            unit = currentState.form.unit
+            unit = currentState.form.unit,
+            category = currentState.form.category,
         )
         inventoryAddUseCases.insertProduct(newItem).onEach { result ->
             when (result) {
