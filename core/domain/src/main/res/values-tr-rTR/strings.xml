@@ -12,7 +12,6 @@
     <string name="unit_cup_full">Su Bardağı</string>
     <string name="unit_tablespoon_full">Yemek Kaşığı</string>
     <string name="unit_teaspoon_full">Tatlı Kaşığı</string>
-
     <string name="unit_g_short">g</string>
     <string name="unit_kg_short">kg</string>
     <string name="unit_l_short">l</string>
@@ -23,4 +22,34 @@
     <string name="unit_cup_short">bardak</string>
     <string name="unit_tbsp_short">Y.K.</string>
     <string name="unit_tsp_short">T.K.</string>
+
+    <string name="cat_dairy">Süt Ürünleri</string>
+    <string name="cat_vegetable">Sebze</string>
+    <string name="cat_fruit">Meyve</string>
+    <string name="cat_meat_poultry">Et ve Tavuk</string>
+    <string name="cat_seafood">Deniz Ürünleri</string>
+    <string name="cat_deli">Şarküteri</string>
+    <string name="cat_staple_food">Temel Gıda</string>
+    <string name="cat_grains">Tahıl</string>
+    <string name="cat_legumes">Bakliyat</string>
+    <string name="cat_bakery">Fırın Ürünleri</string>
+    <string name="cat_pastry">Hamur Ürünü</string>
+    <string name="cat_oil">Yağ</string>
+    <string name="cat_sauce">Sos</string>
+    <string name="cat_vinegar">Sirke</string>
+    <string name="cat_spice">Baharat</string>
+    <string name="cat_seeds">Tohum</string>
+    <string name="cat_breakfast">Kahvaltılık</string>
+    <string name="cat_beverage">İçecek</string>
+    <string name="cat_canned">Konserve</string>
+    <string name="cat_nuts">Kuruyemiş</string>
+    <string name="cat_fermented">Fermente Ürün</string>
+    <string name="cat_sweetener">Tatlandırıcı</string>
+    <string name="cat_other">Diğer</string>
+
+    <string name="section_produce">Sebze &amp; Meyve</string>
+    <string name="section_protein">Et, Balık &amp; Şarküteri</string>
+    <string name="section_dairy">Süt Ürünleri</string>
+    <string name="section_pantry">Kiler &amp; Temel Gıda</string>
+    <string name="section_other">Diğer</string>
 </resources>

@@ -12,7 +12,6 @@
     <string name="unit_cup_full">Cup</string>
     <string name="unit_tablespoon_full">Tablespoon</string>
     <string name="unit_teaspoon_full">Teaspoon</string>
-
     <string name="unit_g_short">g</string>
     <string name="unit_kg_short">kg</string>
     <string name="unit_l_short">l</string>
@@ -23,4 +22,34 @@
     <string name="unit_cup_short">cup</string>
     <string name="unit_tbsp_short">tbsp</string>
     <string name="unit_tsp_short">tsp</string>
+
+    <string name="cat_dairy">Dairy Products</string>
+    <string name="cat_vegetable">Vegetable</string>
+    <string name="cat_fruit">Fruit</string>
+    <string name="cat_meat_poultry">Meat and Poultry</string>
+    <string name="cat_seafood">Seafood</string>
+    <string name="cat_deli">Deli</string>
+    <string name="cat_staple_food">Staple Food</string>
+    <string name="cat_grains">Grain</string>
+    <string name="cat_legumes">Legumes</string>
+    <string name="cat_bakery">Bakery Products</string>
+    <string name="cat_pastry">Pastry</string>
+    <string name="cat_oil">Oil</string>
+    <string name="cat_sauce">Sauce</string>
+    <string name="cat_vinegar">Vinegar</string>
+    <string name="cat_spice">Spice</string>
+    <string name="cat_seeds">Seeds</string>
+    <string name="cat_breakfast">Breakfast</string>
+    <string name="cat_beverage">Beverage</string>
+    <string name="cat_canned">Canned</string>
+    <string name="cat_nuts">Nuts</string>
+    <string name="cat_fermented">Fermented Product</string>
+    <string name="cat_sweetener">Sweetener</string>
+    <string name="cat_other">Other</string>
+
+    <string name="section_produce">Produce</string>
+    <string name="section_protein">Meat, Seafood &amp; Deli</string>
+    <string name="section_dairy">Dairy</string>
+    <string name="section_pantry">Pantry &amp; Staple Food</string>
+    <string name="section_other">Other</string>
 </resources>
