@@ -2,8 +2,7 @@ package com.refoodio.core.data.mapper.inventory
 
 import com.refoodio.core.network.dto.inventory.ProductDto
 import com.refoodio.core.domain.model.catalog.FoodItem
-
-// core:data/src/main/java/.../mapper/ProductMapper.kt
+import com.refoodio.core.domain.model.recipe.FoodCategory
 
 fun ProductDto.toDomainModel(): FoodItem {
     return FoodItem(
@@ -26,6 +25,7 @@ fun ProductDto.toDomainModel(): FoodItem {
         isFreezable = false,
         isEssential = false,
         isLiquid = false,
-        unit = "Adet"
+        unit = "Adet",
+        categoryId = FoodCategory.OTHER.id
     )
 }
