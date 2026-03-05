@@ -58,7 +58,7 @@ import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.add_inventory.components.ExpiryDateSection
 import com.refoodio.inventory.presentation.add_inventory.components.SearchAndBarcodeField
-import com.refoodio.inventory.presentation.add_inventory.components.SelectedProductCard
+import com.refoodio.inventory.presentation.add_inventory.components.SelectedInventoryCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -185,7 +185,7 @@ fun AddInventoryScreen(
             exit = fadeOut() + shrinkVertically()
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.large)) {
-                SelectedProductCard(
+                SelectedInventoryCard(
                     selectedFoodName = state.form.selectedFoodName,
                     selectedCategory = state.form.selectedCategory,
                     quantity = state.form.quantity,
@@ -239,7 +239,7 @@ fun AddInventoryScreen(
 
         RefoodioPrimaryButton(
             stringResource(R.string.add_inventory_save_button),
-            onClick = { viewModel.handleEvent(InventoryAddContract.Event.OnSaveProduct) },
+            onClick = { viewModel.handleEvent(InventoryAddContract.Event.OnSaveInventory) },
             isLoading = state.isLoading,
             isEnabled = state.form.selectedFoodName.isNotEmpty()
         )

@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.domain.model.recipe.FoodCategory
 
-@Entity(tableName = "products")
+@Entity(tableName = "inventory")
 data class InventoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,

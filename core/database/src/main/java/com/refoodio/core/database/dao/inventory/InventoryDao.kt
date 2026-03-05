@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface InventoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProduct(product: InventoryEntity)
+    suspend fun insertInventory(inventoryItem: InventoryEntity)
 
-    @Query("SELECT * FROM products")
-    fun getProductsFlow(): Flow<List<InventoryEntity>>
+    @Query("SELECT * FROM inventory")
+    fun getInventoriesFlow(): Flow<List<InventoryEntity>>
 
     @Delete
-    suspend fun deleteProduct(product: InventoryEntity)
+    suspend fun deleteInventory(inventoryItem: InventoryEntity)
 }

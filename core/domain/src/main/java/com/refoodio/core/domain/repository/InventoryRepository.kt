@@ -4,8 +4,8 @@ import com.refoodio.core.domain.model.inventory.InventoryItem
 import kotlinx.coroutines.flow.Flow
 
 interface InventoryRepository {
-    fun getAllProducts(): Flow<List<InventoryItem>>
-    suspend fun addProduct(product: InventoryItem)
+    fun getAllInventories(): Flow<List<InventoryItem>>
+    suspend fun addInventory(inventoryItem: InventoryItem)
 
-    suspend fun deleteProduct(product: InventoryItem)
+    suspend fun deleteInventory(inventoryItem: InventoryItem)
 }

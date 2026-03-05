@@ -2,7 +2,7 @@ package com.refoodio.inventory
 
 import com.refoodio.core.domain.model.catalog.FoodItem
 import com.refoodio.core.domain.use_case.catalog.GetFoodSuggestionsUseCase
-import com.refoodio.core.domain.use_case.inventory.addInventory.InsertProductUseCase
+import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.inventory.presentation.add_inventory.InventoryAddViewModel
 import io.mockk.coEvery
@@ -33,7 +33,7 @@ class InventoryAddViewModelTest {
 
     private val suggestionsUseCase = mockk<GetFoodSuggestionsUseCase>() // UseCase'i mockla
 
-    private val addUseCase = mockk<InsertProductUseCase>()
+    private val addUseCase = mockk<InsertInventoryUseCase>()
     private lateinit var viewModel: InventoryAddViewModel
 
     @Before
@@ -92,7 +92,7 @@ class InventoryAddViewModelTest {
         runCurrent()
 
         // 2. Act: Kaydet butonuna basıldı
-        viewModel.saveProduct()
+        viewModel.saveInventory()
         runCurrent()
 
         // 3. Assert: UseCase'in çağrıldığını ve loading'in bittiğini doğrula

@@ -7,7 +7,7 @@ import com.refoodio.core.ui.util.UiText
 interface InventoryListContract {
     data class State(
         val isLoading: Boolean = false,
-        val products: List<InventoryItemUiModel> = emptyList(),
+        val inventories: List<InventoryItemUiModel> = emptyList(),
         val errorMessage: String? = null
     )
 
@@ -22,9 +22,9 @@ interface InventoryListContract {
     )
 
     sealed interface Event {
-        data object LoadProducts : Event
+        data object LoadInventories : Event
 
-        data class DeleteProduct(val product: InventoryItem) : Event
+        data class DeleteInventory(val inventoryItem: InventoryItem) : Event
 
         data object NavigateAddInventory : Event
     }
@@ -35,7 +35,7 @@ interface InventoryListContract {
          */
         data class ShowSnackbar(val message: UiText) : SideEffect
 
-        data object ProductDeleted : SideEffect
+        data object InventoryDeleted : SideEffect
 
         data object NavigateToAddInventory : SideEffect
     }

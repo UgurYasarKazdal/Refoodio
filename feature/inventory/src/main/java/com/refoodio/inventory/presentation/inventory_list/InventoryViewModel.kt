@@ -33,13 +33,13 @@ class InventoryViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        loadProducts()
+        loadInventories()
     }
 
     fun handleEvent(event: InventoryListContract.Event) {
         when (event) {
-            is InventoryListContract.Event.DeleteProduct -> deleteProduct(event.product)
-            is InventoryListContract.Event.LoadProducts -> loadProducts()
+            is InventoryListContract.Event.DeleteInventory -> deleteInventory(event.inventoryItem)
+            is InventoryListContract.Event.LoadInventories -> loadInventories()
             is InventoryListContract.Event.NavigateAddInventory -> {
                 viewModelScope.launch {
                     _effect.send(InventoryListContract.SideEffect.NavigateToAddInventory)
@@ -48,15 +48,15 @@ class InventoryViewModel @Inject constructor(
         }
     }
 
-    private fun loadProducts() {
-        inventoryListUseCases.getProducts().onEach { result ->
+    private fun loadInventories() {
+        inventoryListUseCases.getInventories().onEach { result ->
             when (result) {
                 is Resource.Loading -> {
                     _state.update { it.copy(isLoading = true) }
                 }
 
                 is Resource.Success -> {
-                    val uiProducts = result.data.map { item ->
+                    val uiInventories = result.data.map { item ->
                         InventoryListContract.InventoryItemUiModel(
                             id = item.id,
                             name = item.name,
@@ -74,7 +74,7 @@ class InventoryViewModel @Inject constructor(
 
                     _state.update {
                         it.copy(
-                            isLoading = false, products = uiProducts
+                            isLoading = false, inventories = uiInventories
                         )
                     }
                 }
@@ -90,8 +90,8 @@ class InventoryViewModel @Inject constructor(
     }
 
 
-    private fun deleteProduct(product: InventoryItem) {
-        inventoryListUseCases.deleteProduct(product).onEach { result ->
+    private fun deleteInventory(inventoryItem: InventoryItem) {
+        inventoryListUseCases.deleteInventory(inventoryItem).onEach { result ->
             when (result) {
                 is Resource.Loading -> {
                     _state.update { it.copy(isLoading = true) }
@@ -101,7 +101,7 @@ class InventoryViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = false) }
                     _effect.send(
                         InventoryListContract.SideEffect.ShowSnackbar(
-                            UiText.StringResource(R.string.product_deleted_successfully)
+                            UiText.StringResource(R.string.inventory_deleted_successfully)
                         )
                     )
                 }

@@ -8,8 +8,8 @@ import com.refoodio.core.domain.util.asResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class DeleteProductUseCase(private val repository: InventoryRepository) {
-    operator fun invoke(product: InventoryItem): Flow<InventoryResource<Unit>> = flow {
-        emit(repository.deleteProduct(product))
+class DeleteInventoryUseCase(private val repository: InventoryRepository) {
+    operator fun invoke(inventoryItem: InventoryItem): Flow<InventoryResource<Unit>> = flow {
+        emit(repository.deleteInventory(inventoryItem))
     }.asResource()
 }

@@ -5,11 +5,11 @@ import com.refoodio.core.domain.repository.FoodRepository
 import com.refoodio.core.domain.repository.InventoryRepository
 import com.refoodio.core.domain.use_case.catalog.GetFoodSuggestionsUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcodeUseCase
-import com.refoodio.core.domain.use_case.inventory.addInventory.InsertProductUseCase
+import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.core.domain.use_case.inventory.addInventory.ValidateInventoryUseCase
-import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteProductUseCase
-import com.refoodio.core.domain.use_case.inventory.inventoryList.GetProductsUseCase
+import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteInventoryUseCase
+import com.refoodio.core.domain.use_case.inventory.inventoryList.GetInventoriesUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.InventoryListUseCases
 import dagger.Module
 import dagger.Provides
@@ -30,8 +30,8 @@ object InventoryUseCaseModule {
         inventoryRepository: InventoryRepository
     ): InventoryListUseCases {
         return InventoryListUseCases(
-            getProducts = GetProductsUseCase(inventoryRepository),
-            deleteProduct = DeleteProductUseCase(inventoryRepository)
+            getInventories = GetInventoriesUseCase(inventoryRepository),
+            deleteInventory = DeleteInventoryUseCase(inventoryRepository)
         )
     }
 
@@ -42,7 +42,7 @@ object InventoryUseCaseModule {
         foodRepository: FoodRepository,
         validateInventory: ValidateInventoryUseCase
     ): InventoryAddUseCases = InventoryAddUseCases(
-        insertProduct = InsertProductUseCase(inventoryRepository, validateInventory),
+        insertInventory = InsertInventoryUseCase(inventoryRepository, validateInventory),
         suggestionsUseCase = GetFoodSuggestionsUseCase(catalogRepository),
         getFoodByBarcodeUseCase = GetFoodByBarcodeUseCase(foodRepository)
     )
