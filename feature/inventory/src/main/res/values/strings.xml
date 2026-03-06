@@ -24,4 +24,7 @@
     <string name="Delete">Delete</string>
     <string name="quantity">Quantity: %1$s</string>
     <string name="add_inventory_expiry_date">Expiry Date: %1$s</string>
+
+    <string name="section_critical">Expiring Soon</string>
+
 </resources>

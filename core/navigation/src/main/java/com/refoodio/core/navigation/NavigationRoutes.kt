@@ -10,8 +10,7 @@ object NavigationRoutes {
     object InventoryAddRoute
 
     @Serializable
-    object RecipeRoute
-
+    data class RecipeRoute(val selectedIds: String? = null)
     @Serializable
     object SettingsRoute
 

@@ -25,4 +25,6 @@
     <string name="quantity">Miktar: %1$s</string>
     <string name="add_inventory_expiry_date">Son Kullanma Tarihi: %1$s</string>
 
+    <string name="section_critical">Tarihi Yaklaşanlar</string>
+
 </resources>

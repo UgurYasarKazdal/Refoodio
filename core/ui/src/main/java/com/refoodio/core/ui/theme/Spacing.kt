@@ -8,6 +8,7 @@ val LocalSpacing = staticCompositionLocalOf { RefoodioSpacing() }
 
 data class RefoodioSpacing(
     val default: Dp = 0.dp,
+    val extraSmall: Dp = 2.dp,
     val small: Dp = 4.dp,
     val medium: Dp = 8.dp,
     val mediumLarge: Dp = 12.dp,
