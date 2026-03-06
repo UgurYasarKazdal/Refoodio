@@ -21,19 +21,18 @@ fun CriticalCarousel(
     criticalItems: List<InventoryListContract.InventoryItemUiModel>,
     selectedIds: Set<Int>,
     onToggleSelect: (Int) -> Unit,
-    onDeleteClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.section_critical),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.error
         )
         
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -44,8 +43,7 @@ fun CriticalCarousel(
                 CriticalCarouselItem(
                     item = item,
                     isSelected = selectedIds.contains(item.id),
-                    onToggleSelect = onToggleSelect,
-                    onDeleteClick = onDeleteClick
+                    onToggleSelect = onToggleSelect
                 )
             }
         }

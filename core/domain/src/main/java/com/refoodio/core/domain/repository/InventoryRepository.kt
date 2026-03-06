@@ -8,4 +8,6 @@ interface InventoryRepository {
     suspend fun addInventory(inventoryItem: InventoryItem)
 
     suspend fun deleteInventory(inventoryItem: InventoryItem)
+
+    suspend fun deleteItems(idList: List<Int>)
 }

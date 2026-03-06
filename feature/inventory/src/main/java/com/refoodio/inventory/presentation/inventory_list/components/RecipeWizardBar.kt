@@ -5,28 +5,35 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.refoodio.core.ui.theme.RefoodioTheme
-
 @Composable
 fun RecipeWizardBar(
     selectedCount: Int,
     onFindRecipesClick: () -> Unit,
-    onClearSelection: () -> Unit,
+    onClearSelection: () -> Unit, // Sadece seçimi kaldırır
+    onDeleteSelected: () -> Unit, // Envanterden tamamen siler
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
@@ -44,23 +51,52 @@ fun RecipeWizardBar(
         ) {
             Row(
                 modifier = Modifier.padding(RefoodioTheme.spacing.medium),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "$selectedCount Malzeme Seçildi",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Text(
-                        text = "Elinizdekilerle en iyi tarifleri bulun",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // 1. SEÇİMİ TEMİZLE
+                        TextButton(
+                            onClick = onClearSelection,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text("Seçimi Kaldır", style = MaterialTheme.typography.labelMedium)
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("|", color = MaterialTheme.colorScheme.outline)
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // 2. SEÇİLENLERİ SİL
+                        TextButton(
+                            onClick = onDeleteSelected,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                "Sil",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                 }
 
                 Button(onClick = onFindRecipesClick) {
                     Text("Tarif Bul")
-                    Icon(Icons.Default.AutoAwesome, contentDescription = null) // Sihirbaz ikonu
+                    Icon(Icons.Default.AutoAwesome, contentDescription = null)
                 }
             }
         }
