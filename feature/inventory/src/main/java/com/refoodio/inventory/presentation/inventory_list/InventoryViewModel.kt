@@ -1,6 +1,7 @@
 package com.refoodio.inventory.presentation.inventory_list
 
 import android.app.Application
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.refoodio.core.domain.model.inventory.toFoodGroup
@@ -12,6 +13,7 @@ import com.refoodio.core.ui.util.formatQuantity
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.util.asInventoryErrorText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -92,35 +94,47 @@ class InventoryViewModel @Inject constructor(
                 }
 
                 is Resource.Success -> {
-                    val allItems = result.data.map { item ->
-                        InventoryListContract.InventoryItemUiModel(
-                            id = item.id,
-                            name = item.name,
-                            quantityText = UiText.StringResource(
-                                R.string.quantity_short, item.quantity.formatQuantity()
-                            ),
-                            formattedDate = UiText.StringResource(
-                                R.string.add_inventory_expiry_date_short,
-                                item.expiryDate.formatExpiryDate()
-                            ),
-                            isCritical = item.isNearExpiry(),
-                            originalItem = item,
-                            category = item.category,
-                            unit = item.unit
-                        )
-                    }
+                    viewModelScope.launch(Dispatchers.Default) {
+                        // Hesaplamayı arka plana al
+                        val allItems = result.data.map { item ->
+                            val group = item.category.toFoodGroup()
+                            val baseColor = Color(
+                                app.resources.getColor(
+                                    group.colorResId, null
+                                )
+                            ) // Bir kez hesapla
 
-                    // Hiyerarşik Dağıtım (Race Condition önlemi: immutable kopyalar üzerinden işlem)
-                    val criticalList = allItems.filter { it.isCritical }
-                    val groupedMap = allItems.groupBy { it.category.toFoodGroup() }
-                        .toSortedMap(compareBy { it.ordinal }) // Enum sırasına göre düzenli gösterim
+                            InventoryListContract.InventoryItemUiModel(
+                                id = item.id,
+                                name = item.name,
+                                quantityText = UiText.StringResource(
+                                    R.string.quantity_short, item.quantity.formatQuantity()
+                                ),
+                                formattedDate = UiText.StringResource(
+                                    R.string.add_inventory_expiry_date_short,
+                                    item.expiryDate.formatExpiryDate()
+                                ),
+                                isCritical = item.isNearExpiry(),
+                                originalItem = item,
+                                category = item.category,
+                                unit = item.unit,
+                                color = baseColor,
+                                backgroundColor = baseColor.copy(alpha = 0.25f),
+                                groupIcon = group.iconResId
+                            )
+                        }
 
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            criticalItems = criticalList,
-                            sectionedItems = groupedMap
-                        )
+                        val criticalList = allItems.filter { it.isCritical }
+                        val groupedMap = allItems.groupBy { it.category.toFoodGroup() }
+                            .toSortedMap(compareBy { it.ordinal }) // Enum sırasına göre düzenli gösterim
+
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                criticalItems = criticalList,
+                                sectionedItems = groupedMap
+                            )
+                        }
                     }
                 }
 

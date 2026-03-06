@@ -12,29 +12,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.refoodio.core.domain.model.inventory.toFoodGroup
 import com.refoodio.core.ui.theme.RefoodioTheme
-import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 @Composable
@@ -48,14 +40,14 @@ fun InventoryItem(
         modifier = modifier
             .aspectRatio(1.5f)
             .padding(RefoodioTheme.spacing.small)
-            .clickable { onToggleSelect(item.id) },
+            .clickable { onToggleSelect(item.id) }
+            .shadow(elevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
             else MaterialTheme.colorScheme.surface
         ),
-        border = BorderStroke(1.dp, colorResource(item.category.toFoodGroup().colorResId).copy(alpha = 0.25f)),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, item.backgroundColor),
+        shape = RoundedCornerShape(8.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -102,7 +94,7 @@ fun InventoryItem(
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .height(4.dp)
-                    .background(colorResource(item.category.toFoodGroup().colorResId))
+                    .background(item.color)
             )
         }
     }
