@@ -39,14 +39,14 @@ fun InventoryContent(
         }
     } else {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+            columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (state.criticalItems.isNotEmpty()) {
-                item(span = { GridItemSpan(3) }) {
+                item(span = { GridItemSpan(2) }) {
                     CriticalCarousel(
                         criticalItems = state.criticalItems,
                         selectedIds = state.selectedIds,
@@ -55,14 +55,14 @@ fun InventoryContent(
                         })
                 }
 
-                item(span = { GridItemSpan(3) }) {
+                item(span = { GridItemSpan(2) }) {
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }
 
             state.sectionedItems.forEach { (foodGroup, items) ->
                 val isExpanded = state.expandedGroups.contains(foodGroup)
-                item(span = { GridItemSpan(3) }) {
+                item(span = { GridItemSpan(2) }) {
                     FoodGroupHeader(
                         foodGroup, isExpanded = isExpanded, onHeaderClick = {
                             onEvent(InventoryListContract.Event.ToggleGroupExpansion(foodGroup))
@@ -70,13 +70,18 @@ fun InventoryContent(
                 }
 
                 if (isExpanded) {
-                    items(items,key = { it.id }) { uiModel ->
+                    items(items, key = { it.id }) { uiModel ->
                         Box(modifier = Modifier.animateItem()) {
                             InventoryItem(
                                 item = uiModel,
                                 isSelected = state.selectedIds.contains(uiModel.id),
-                                onToggleSelect = { onEvent(InventoryListContract.Event.OnToggleSelect(it)) }
-                            )
+                                onToggleSelect = {
+                                    onEvent(
+                                        InventoryListContract.Event.OnToggleSelect(
+                                            it
+                                        )
+                                    )
+                                })
                         }
                     }
                 }

@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.refoodio.core.domain.model.inventory.toFoodGroup
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 
@@ -53,7 +52,7 @@ fun CriticalCarouselItem(
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    painter = painterResource(id = item.category.toFoodGroup().iconResId),
+                    painter = painterResource(id = item.groupIcon),
                     contentDescription = null,
                     modifier = Modifier.size(28.dp),
                     tint = Color.Unspecified

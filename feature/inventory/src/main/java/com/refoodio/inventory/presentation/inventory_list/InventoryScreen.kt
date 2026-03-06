@@ -12,6 +12,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,6 +38,10 @@ fun InventoryScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val selectedCount by remember(state.selectedIds) {
+        derivedStateOf { state.selectedIds.size }
+    }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.effect.collect { effect ->
@@ -77,7 +82,7 @@ fun InventoryScreen(
             )
 
             RecipeWizardBar(
-                selectedCount = state.selectedIds.size,
+                selectedCount = selectedCount,
                 onFindRecipesClick = { viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick) },
                 onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
                 onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.DeleteInventory) },

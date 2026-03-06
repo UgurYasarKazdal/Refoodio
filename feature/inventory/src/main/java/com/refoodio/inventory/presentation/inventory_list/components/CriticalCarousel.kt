@@ -30,15 +30,13 @@ fun CriticalCarousel(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.error
         )
-        
+
         LazyRow(
             contentPadding = PaddingValues(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(
-                items = criticalItems,
-                key = { "crit_carousel_${it.id}" } // Stabil ID
+            items(items = criticalItems, key = { it.id } // Stabil ID
             ) { item ->
                 CriticalCarouselItem(
                     item = item,

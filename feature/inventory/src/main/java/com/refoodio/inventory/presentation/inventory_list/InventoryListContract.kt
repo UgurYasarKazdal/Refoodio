@@ -1,5 +1,6 @@
 package com.refoodio.inventory.presentation.inventory_list
 
+import androidx.compose.ui.graphics.Color
 import com.refoodio.core.domain.model.inventory.FoodGroup
 import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.domain.model.inventory.InventoryItem
@@ -27,7 +28,10 @@ interface InventoryListContract {
         val isCritical: Boolean,
         val unit: FoodUnit,
         val category: FoodCategory,
-        val originalItem: InventoryItem
+        val originalItem: InventoryItem,
+        val color: Color, // ID yerine doğrudan Compose Color nesnesi
+        val backgroundColor: Color,
+        val groupIcon: Int // cop
     )
 
     sealed interface Event {
