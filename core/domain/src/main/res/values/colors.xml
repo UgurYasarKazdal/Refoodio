@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="inventory_produce">#FF4CAF50</color>
+    <color name="inventory_protein">#FFE53935</color>
+    <color name="inventory_pantry">#FFFF9800</color>
+    <color name="inventory_dairy">#FF2196F3</color>
+    <color name="inventory_other">#FF9C27B0</color>
+</resources>

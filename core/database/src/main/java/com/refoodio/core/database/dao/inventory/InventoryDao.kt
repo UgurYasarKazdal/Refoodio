@@ -18,4 +18,7 @@ interface InventoryDao {
 
     @Delete
     suspend fun deleteInventory(inventoryItem: InventoryEntity)
+
+    @Query("DELETE FROM inventory WHERE id IN (:idList)")
+    suspend fun deleteItemsByIds(idList: List<Int>)
 }

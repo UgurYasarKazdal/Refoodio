@@ -3,11 +3,10 @@ package com.refoodio.inventory.presentation.inventory_list
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.model.inventory.toFoodGroup
 import com.refoodio.core.domain.use_case.inventory.inventoryList.InventoryListUseCases
 import com.refoodio.core.domain.util.Resource
-import com.refoodio.core.domain.util.toReadableDate
+import com.refoodio.core.domain.util.formatExpiryDate
 import com.refoodio.core.ui.util.UiText
 import com.refoodio.core.ui.util.formatQuantity
 import com.refoodio.inventory.R
@@ -41,20 +40,9 @@ class InventoryViewModel @Inject constructor(
     fun handleEvent(event: InventoryListContract.Event) {
         when (event) {
             is InventoryListContract.Event.DeleteInventory -> {
-                // ID üzerinden orijinal item'ı bulup siliyoruz
-                val currentItems = _state.value.sectionedItems.values.flatten()
-                val itemToDelete = currentItems.find { it.id == event.id }?.originalItem
-
-                itemToDelete?.let { deleteInventory(it) }
-
-                viewModelScope.launch {
-                    _effect.send(
-                        InventoryListContract.SideEffect.ShowSnackbar(
-                            UiText.StringResource(
-                                R.string.inventory_deleted_successfully
-                            )
-                        )
-                    )
+                val idsToDelete = state.value.selectedIds.toList()
+                if (idsToDelete.isNotEmpty()) {
+                    deleteInventory(idsToDelete)
                 }
             }
 
@@ -82,7 +70,16 @@ class InventoryViewModel @Inject constructor(
                     _effect.send(InventoryListContract.SideEffect.NavigateToAddInventory)
                 }
             }
-            // Eski event yapısını contract'a göre güncelledik
+
+            is InventoryListContract.Event.ToggleGroupExpansion -> {
+                val newExpandedGroups = if (_state.value.expandedGroups.contains(event.foodGroup)) {
+                    _state.value.expandedGroups - event.foodGroup
+                } else {
+                    _state.value.expandedGroups + event.foodGroup
+                }
+                _state.update { it.copy(expandedGroups = newExpandedGroups) }
+            }
+
             else -> Unit
         }
     }
@@ -100,10 +97,11 @@ class InventoryViewModel @Inject constructor(
                             id = item.id,
                             name = item.name,
                             quantityText = UiText.StringResource(
-                                R.string.quantity, item.quantity.formatQuantity()
+                                R.string.quantity_short, item.quantity.formatQuantity()
                             ),
                             formattedDate = UiText.StringResource(
-                                R.string.add_inventory_expiry_date, item.expiryDate.toReadableDate()
+                                R.string.add_inventory_expiry_date_short,
+                                item.expiryDate.formatExpiryDate()
                             ),
                             isCritical = item.isNearExpiry(),
                             originalItem = item,
@@ -147,20 +145,15 @@ class InventoryViewModel @Inject constructor(
         }
     }
 
-    private fun deleteInventory(inventoryItem: InventoryItem) {
-        inventoryListUseCases.deleteInventory(inventoryItem).onEach { result ->
+    private fun deleteInventory(inventories: List<Int>) {
+        inventoryListUseCases.deleteSelectedInventories(inventories).onEach { result ->
             when (result) {
                 is Resource.Loading -> {
                     _state.update { it.copy(isLoading = true) }
                 }
 
                 is Resource.Success -> {
-                    // Ürün silindiğinde seçili listesinden de çıkarılmalı
-                    _state.update {
-                        it.copy(
-                            isLoading = false, selectedIds = it.selectedIds - inventoryItem.id
-                        )
-                    }
+                    _state.update { it.copy(isLoading = false, selectedIds = emptySet()) }
                     _effect.send(
                         InventoryListContract.SideEffect.ShowSnackbar(
                             UiText.StringResource(R.string.inventory_deleted_successfully)

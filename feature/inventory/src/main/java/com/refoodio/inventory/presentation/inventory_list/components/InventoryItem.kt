@@ -1,6 +1,7 @@
 package com.refoodio.inventory.presentation.inventory_list.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,14 +9,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,103 +26,84 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.refoodio.core.domain.model.inventory.toFoodGroup
 import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 @Composable
 fun InventoryItem(
-    inventoryUiModel: InventoryListContract.InventoryItemUiModel,
-    onDeleteClick: (Int) -> Unit,
-    onToggleSelect: (Int) -> Unit, // Seçim değişikliği için yeni callback
-    isSelected: Boolean, // Seçili olma durumu
+    item: InventoryListContract.InventoryItemUiModel,
+    onToggleSelect: (Int) -> Unit,
+    isSelected: Boolean,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
-            .aspectRatio(1f) // Kare kartlar daha modern durur
+            .aspectRatio(1.5f)
             .padding(RefoodioTheme.spacing.small)
-            .clickable { onToggleSelect(inventoryUiModel.id) },
+            .clickable { onToggleSelect(item.id) },
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
             else MaterialTheme.colorScheme.surface
         ),
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-        shape = RoundedCornerShape(16.dp)
+        border = BorderStroke(1.dp, colorResource(item.category.toFoodGroup().colorResId).copy(alpha = 0.25f)),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // 1. SİLME BUTONU (Sağ Üst Köşe)
-            IconButton(
-                onClick = { onDeleteClick(inventoryUiModel.id) },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(32.dp)
-                    .padding(4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.Delete),
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
-                    modifier = Modifier.size(18.dp)
-                )
-            }
             Column(
                 modifier = Modifier.padding(RefoodioTheme.spacing.medium),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center
             ) {
-                /*     // Kategori İkonu (Büyük ve dairesel arka planlı)
-                     Box(
-                         modifier = Modifier
-                             .size(48.dp)
-                             .background(
-                                 MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                                 CircleShape
-                             ),
-                         contentAlignment = Alignment.Center
-                     ) {
-                         Icon(
-                             painter = painterResource(id = inventoryUiModel.category.imageResourceId),
-                             contentDescription = null,
-                             modifier = Modifier.size(24.dp),
-                             tint = if (inventoryUiModel.isCritical) Color(0xFFE53935) else MaterialTheme.colorScheme.primary
-                         )
-                     }*/
-
                 Spacer(modifier = Modifier.height(RefoodioTheme.spacing.small))
-
                 Text(
-                    text = inventoryUiModel.name,
+                    text = item.name,
                     style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Start,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
                 Text(
-                    text = "${inventoryUiModel.quantityText.asString()} ${
+                    text = "${item.quantityText.asString()} ${
                         stringResource(
-                            inventoryUiModel.unit.fullNameResId
+                            item.unit.shortNameResId
                         )
                     }",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                if (inventoryUiModel.isCritical) {
+                if (item.isCritical) {
                     Text(
                         text = "Hemen Tüket!",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.Bold
                     )
+                } else {
+                    Text(
+                        text = item.formattedDate.asString(),
+                        style = MaterialTheme.typography.labelSmall
+                    )
                 }
             }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .height(4.dp)
+                    .background(colorResource(item.category.toFoodGroup().colorResId))
+            )
         }
     }
 }

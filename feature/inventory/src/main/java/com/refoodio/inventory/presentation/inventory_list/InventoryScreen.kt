@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 fun InventoryScreen(
     viewModel: InventoryViewModel = hiltViewModel(),
     onNavigateToAddInventory: () -> Unit,
-    onNavigateToRecipes: (String) -> Unit // Navigasyon için yeni parametre
+    onNavigateToRecipes: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -63,8 +63,6 @@ fun InventoryScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
-            // Eğer seçim varsa FAB'ı gizleyebilir veya yukarı kaydırabilirsin.
-            // Şimdilik standart bırakıyoruz.
             FloatingActionButton(onClick = { viewModel.handleEvent(InventoryListContract.Event.NavigateAddInventory) }) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add))
             }
@@ -78,11 +76,11 @@ fun InventoryScreen(
                 state = state, onEvent = viewModel::handleEvent
             )
 
-            // Sihirbaz Barı en üst katmanda ve en altta
             RecipeWizardBar(
                 selectedCount = state.selectedIds.size,
                 onFindRecipesClick = { viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick) },
                 onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
+                onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.DeleteInventory) },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }

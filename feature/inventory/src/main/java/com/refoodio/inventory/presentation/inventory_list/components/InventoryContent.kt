@@ -1,9 +1,12 @@
 package com.refoodio.inventory.presentation.inventory_list.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,7 +23,7 @@ import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
- fun InventoryContent(
+fun InventoryContent(
     state: InventoryListContract.State, onEvent: (InventoryListContract.Event) -> Unit
 ) {
     if (state.isLoading) {
@@ -36,39 +39,46 @@ import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
         }
     } else {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+            columns = GridCells.Fixed(3),
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 1. Üst Kısım: Tarihi Yaklaşanlar (Tam genişlik kaplayan yatay liste)
             if (state.criticalItems.isNotEmpty()) {
-                item(span = { GridItemSpan(2) }) {
+                item(span = { GridItemSpan(3) }) {
                     CriticalCarousel(
                         criticalItems = state.criticalItems,
-                        selectedIds = state.selectedIds, // State'den gelen seçili ID'ler
+                        selectedIds = state.selectedIds,
                         onToggleSelect = { id ->
                             onEvent(InventoryListContract.Event.OnToggleSelect(id))
-                        },
-                        onDeleteClick = { id ->
-                            onEvent(InventoryListContract.Event.DeleteInventory(id))
                         })
+                }
+
+                item(span = { GridItemSpan(3) }) {
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
 
-            // 2. Ana Liste: Kategoriler
             state.sectionedItems.forEach { (foodGroup, items) ->
-                // Header her zaman tam genişlik (2 sütun) kaplamalı
-                item(span = { GridItemSpan(2) }) {
-                    FoodGroupHeader(foodGroup)
+                val isExpanded = state.expandedGroups.contains(foodGroup)
+                item(span = { GridItemSpan(3) }) {
+                    FoodGroupHeader(
+                        foodGroup, isExpanded = isExpanded, onHeaderClick = {
+                            onEvent(InventoryListContract.Event.ToggleGroupExpansion(foodGroup))
+                        })
                 }
 
-                // Ürünler 2'şerli yan yana dizilir
-                items(items) { uiModel ->
-                    InventoryItem(
-                        inventoryUiModel = uiModel,
-                        isSelected = state.selectedIds.contains(uiModel.id),
-                        onDeleteClick = { onEvent(InventoryListContract.Event.DeleteInventory(it)) },
-                        onToggleSelect = { onEvent(InventoryListContract.Event.OnToggleSelect(it)) })
+                if (isExpanded) {
+                    items(items,key = { it.id }) { uiModel ->
+                        Box(modifier = Modifier.animateItem()) {
+                            InventoryItem(
+                                item = uiModel,
+                                isSelected = state.selectedIds.contains(uiModel.id),
+                                onToggleSelect = { onEvent(InventoryListContract.Event.OnToggleSelect(it)) }
+                            )
+                        }
+                    }
                 }
             }
         }

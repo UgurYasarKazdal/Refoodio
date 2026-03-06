@@ -33,4 +33,10 @@ class InventoryRepositoryImpl @Inject constructor(
             inventoryDao.deleteInventory(inventoryItem.toEntity())
         }
     }
+
+    override suspend fun deleteItems(idList: List<Int>) {
+        withContext(Dispatchers.IO) {
+            inventoryDao.deleteItemsByIds(idList)
+        }
+    }
 }

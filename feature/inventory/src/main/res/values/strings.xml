@@ -23,8 +23,9 @@
     <string name="add_inventory_save_button">Add to Inventory</string>
     <string name="Delete">Delete</string>
     <string name="quantity">Quantity: %1$s</string>
+    <string name="quantity_short">Qty: %1$s</string>
     <string name="add_inventory_expiry_date">Expiry Date: %1$s</string>
-
+    <string name="add_inventory_expiry_date_short">EXP: %1$s</string>
     <string name="section_critical">Expiring Soon</string>
 
 </resources>

@@ -9,6 +9,7 @@ import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryU
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.core.domain.use_case.inventory.addInventory.ValidateInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteInventoryUseCase
+import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteSelectedInventoriesUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.GetInventoriesUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.InventoryListUseCases
 import dagger.Module
@@ -31,7 +32,8 @@ object InventoryUseCaseModule {
     ): InventoryListUseCases {
         return InventoryListUseCases(
             getInventories = GetInventoriesUseCase(inventoryRepository),
-            deleteInventory = DeleteInventoryUseCase(inventoryRepository)
+            deleteInventory = DeleteInventoryUseCase(inventoryRepository),
+            deleteSelectedInventories = DeleteSelectedInventoriesUseCase(inventoryRepository)
         )
     }
 

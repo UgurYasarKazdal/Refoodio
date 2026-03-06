@@ -13,8 +13,10 @@ interface InventoryListContract {
         val criticalItems: List<InventoryItemUiModel> = emptyList(),
         // 2. Ana Bölüm: FoodGroup başlıklarına göre gruplanmış envanter
         val sectionedItems: Map<FoodGroup, List<InventoryItemUiModel>> = emptyMap(),
+        val expandedGroups: Set<FoodGroup> = FoodGroup.values().toSet(), // Başlangıçta hepsi açık
         // 3. Seçim Durumu: Sihirbaz Barı için seçilen ürünlerin ID set'i
-        val selectedIds: Set<Int> = emptySet(), val errorMessage: String? = null
+        val selectedIds: Set<Int> = emptySet(),
+        val errorMessage: String? = null
     )
 
     data class InventoryItemUiModel(
@@ -24,7 +26,7 @@ interface InventoryListContract {
         val formattedDate: UiText,
         val isCritical: Boolean,
         val unit: FoodUnit,
-        val category: FoodCategory, // İkon ve isim için kategori bilgisi eklendi
+        val category: FoodCategory,
         val originalItem: InventoryItem
     )
 
@@ -32,7 +34,7 @@ interface InventoryListContract {
         data object LoadInventories : Event
 
         // Silme işlemi için ID yeterli olacaktır
-        data class DeleteInventory(val id: Int) : Event
+        data object DeleteInventory : Event
 
         // Kart seçimi/iptali için yeni event
         data class OnToggleSelect(val id: Int) : Event
@@ -44,6 +46,8 @@ interface InventoryListContract {
         data object OnClearSelection : Event
 
         data object NavigateAddInventory : Event
+
+        data class ToggleGroupExpansion(val foodGroup: FoodGroup) : Event
     }
 
     sealed interface SideEffect {
