@@ -9,15 +9,15 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SoupKitchen
 import androidx.compose.ui.graphics.vector.ImageVector
 
- sealed class BottomNavItem<T : Any>(
-     val route: T, @StringRes val labelRes: Int, val icon: ImageVector
+sealed class BottomNavItem<T : Any>(
+    val route: T, @StringRes val labelRes: Int, val icon: ImageVector
 ) {
     object Home : BottomNavItem<NavigationRoutes.HomeRoute>(
-        route = NavigationRoutes.HomeRoute,labelRes = R.string.nav_home, icon = Icons.Default.Home
+        route = NavigationRoutes.HomeRoute, labelRes = R.string.nav_home, icon = Icons.Default.Home
     )
 
     object Inventory : BottomNavItem<NavigationRoutes.InventoryRoute>(
-        route = NavigationRoutes.InventoryRoute,R.string.nav_inventory, icon = Icons.Default.List
+        route = NavigationRoutes.InventoryRoute, R.string.nav_inventory, icon = Icons.Default.List
     )
 
     object AddItem : BottomNavItem<NavigationRoutes.InventoryAddRoute>(
@@ -27,11 +27,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
     )
 
     object Recipe : BottomNavItem<NavigationRoutes.RecipeRoute>(
-        route = NavigationRoutes.RecipeRoute, labelRes = R.string.nav_recipe, icon = Icons.Default.SoupKitchen
+        route = NavigationRoutes.RecipeRoute(selectedIds = null),
+        labelRes = R.string.nav_recipe,
+        icon = Icons.Default.SoupKitchen
     )
 
     object Settings : BottomNavItem<NavigationRoutes.SettingsRoute>(
-        route = NavigationRoutes.SettingsRoute, labelRes = R.string.nav_settings, icon = Icons.Default.Settings
+        route = NavigationRoutes.SettingsRoute,
+        labelRes = R.string.nav_settings,
+        icon = Icons.Default.Settings
     )
 
 }
