@@ -3,10 +3,12 @@ package com.refoodio.inventory.di
 import com.refoodio.core.domain.repository.FoodCatalogRepository
 import com.refoodio.core.domain.repository.FoodRepository
 import com.refoodio.core.domain.repository.InventoryRepository
+import com.refoodio.core.domain.repository.ReceiptRepository
 import com.refoodio.core.domain.use_case.catalog.GetFoodSuggestionsUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcodeUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
+import com.refoodio.core.domain.use_case.inventory.addInventory.ScanReceiptUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.ValidateInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteSelectedInventoriesUseCase
@@ -48,4 +50,9 @@ object InventoryUseCaseModule {
         suggestionsUseCase = GetFoodSuggestionsUseCase(catalogRepository),
         getFoodByBarcodeUseCase = GetFoodByBarcodeUseCase(foodRepository)
     )
+
+    @Provides
+    fun provideScanReceiptUseCase(
+        receiptRepository: ReceiptRepository
+    ): ScanReceiptUseCase = ScanReceiptUseCase(receiptRepository)
 }

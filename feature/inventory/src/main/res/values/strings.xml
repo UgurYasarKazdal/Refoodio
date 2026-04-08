@@ -11,6 +11,7 @@
     <string name="need_permission_to_camera">Barkod taramak için kamera izni gerekiyor</string>
     <string name="add_inventory_search_label">Search Inventory (e.g. Yogurt)</string>
     <string name="add_inventory_barcode_content_desc">Scan Barcode</string>
+    <string name="add_inventory_receipt_content_desc">Scan Receipt</string>
     <string name="add_inventory_close_content_desc">Close</string>
     <string name="add_inventory_selected_label">Selected: %1$s</string>
     <string name="add_inventory_category_label">Category: %1$s</string>

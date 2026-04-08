@@ -6,6 +6,7 @@ import com.refoodio.core.navigation.NavigationRoutes
 import com.refoodio.core.navigation.navigateAsBottomNav
 import com.refoodio.inventory.presentation.add_inventory.AddInventoryScreen
 import com.refoodio.inventory.presentation.inventory_list.InventoryScreen
+import com.refoodio.inventory.presentation.receipt_scan.ReceiptScanScreen
 import javax.inject.Inject
 
 internal class InventoryNavImpl @Inject constructor() : FeatureNavEntry {
@@ -27,9 +28,16 @@ internal class InventoryNavImpl @Inject constructor() : FeatureNavEntry {
         }
         navGraphBuilder.composable<NavigationRoutes.InventoryAddRoute> {
             AddInventoryScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                })
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToReceiptScan = {
+                    navController.navigate(NavigationRoutes.ReceiptScanRoute)
+                }
+            )
+        }
+        navGraphBuilder.composable<NavigationRoutes.ReceiptScanRoute> {
+            ReceiptScanScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

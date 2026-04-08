@@ -11,6 +11,7 @@
     <string name="need_permission_to_camera">Barkod taramak için kamera izni gerekiyor</string>
     <string name="add_inventory_search_label">Ürün Ara (örn: Yoğurt)</string>
     <string name="add_inventory_barcode_content_desc">Barkod Oku</string>
+    <string name="add_inventory_receipt_content_desc">Fiş Tara</string>
     <string name="add_inventory_close_content_desc">Kapat</string>
     <string name="add_inventory_selected_label">Seçilen: %1$s</string>
     <string name="add_inventory_category_label">Kategori: %1$s</string>

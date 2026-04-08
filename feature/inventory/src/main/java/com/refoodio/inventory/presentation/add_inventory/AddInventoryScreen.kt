@@ -63,7 +63,9 @@ import com.refoodio.inventory.presentation.add_inventory.components.SelectedInve
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddInventoryScreen(
-    viewModel: InventoryAddViewModel = hiltViewModel(), onNavigateBack: () -> Unit
+    viewModel: InventoryAddViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
+    onNavigateToReceiptScan: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -121,7 +123,9 @@ fun AddInventoryScreen(
                 } else {
                     cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                 }
-            })
+            },
+            onReceiptClick = onNavigateToReceiptScan
+        )
 
         if (state.isCameraVisible) {
             Dialog(
