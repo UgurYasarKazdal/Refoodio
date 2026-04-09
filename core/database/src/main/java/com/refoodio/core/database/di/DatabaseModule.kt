@@ -8,6 +8,7 @@ import com.refoodio.core.database.dao.catalog.FoodSuggestionDao
 import com.refoodio.core.database.dao.inventory.InventoryDao
 import com.refoodio.core.database.migrations.MIGRATION_2_3
 import com.refoodio.core.database.migrations.MIGRATION_3_4
+import com.refoodio.core.database.migrations.MIGRATION_4_5
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,7 +25,7 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): RefoodioDatabase {
         return Room.databaseBuilder(
             context, RefoodioDatabase::class.java, "refoodio_db"
-        ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+        ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             //.fallbackToDestructiveMigration(true)//migration kullanma tüm tabloları sil
             .build()
     }

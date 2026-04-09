@@ -48,6 +48,14 @@ class ReceiptScanViewModel @Inject constructor(
                 it.copy(category = event.category)
             }
 
+            is ReceiptScanContract.Event.OnItemPriceChanged -> updateItem(event.index) {
+                it.copy(price = event.price)
+            }
+
+            is ReceiptScanContract.Event.OnStoreNameChanged -> {
+                _state.update { s -> s.copy(storeName = event.storeName) }
+            }
+
             is ReceiptScanContract.Event.OnItemRemoved -> {
                 _state.update { s ->
                     s.copy(scannedItems = s.scannedItems.toMutableList().also { it.removeAt(event.index) })
@@ -74,7 +82,8 @@ class ReceiptScanViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             phase = ReceiptScanContract.Phase.REVIEWING,
-                            scannedItems = items
+                            scannedItems = items,
+                            storeName = items.firstOrNull()?.storeName ?: ""
                         )
                     }
                 }
@@ -92,8 +101,9 @@ class ReceiptScanViewModel @Inject constructor(
 
     private fun saveItems() {
         viewModelScope.launch {
+            val storeName = _state.value.storeName.trim().ifBlank { null }
             _state.value.scannedItems.forEach { item ->
-                inventoryRepository.addInventory(item)
+                inventoryRepository.addInventory(item.copy(storeName = storeName ?: item.storeName))
             }
             _effect.send(ReceiptScanContract.SideEffect.NavigateBack)
         }

@@ -15,7 +15,7 @@ import com.refoodio.core.database.entity.inventory.InventoryEntity
 
 @Database(
     entities = [InventoryEntity::class, FoodCatalogItemEntity::class, FoodCatalogFtsEntity::class],
-    version = 4
+    version = 5
 )
 @TypeConverters(
     StringListTypeConverter::class, FoodUnitConverter::class, FoodCategoryConverter::class

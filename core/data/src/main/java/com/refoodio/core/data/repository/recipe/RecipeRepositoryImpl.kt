@@ -5,14 +5,14 @@ import com.refoodio.core.data.mapper.recipe.parseGeminiResponse
 import com.refoodio.core.domain.model.recipe.Recipe
 import com.refoodio.core.domain.model.recipe.RecipePreferences
 import com.refoodio.core.domain.repository.recipe.RecipeRepository
-import com.refoodio.core.network.api.GeminiApiService
+import com.refoodio.core.network.datasource.GeminiDataSource
 import com.refoodio.core.network.dto.recipe.Content
 import com.refoodio.core.network.dto.recipe.GeminiRequest
 import com.refoodio.core.network.dto.recipe.Part
 import javax.inject.Inject
 
 class RecipeRepositoryImpl @Inject constructor(
-    private val geminiApi: GeminiApiService // Retrofit veya SDK
+    private val geminiApi: GeminiDataSource
 ) : RecipeRepository {
 
     override suspend fun getRecipe(
@@ -30,6 +30,7 @@ class RecipeRepositoryImpl @Inject constructor(
 
             // 3. API Çağrısı Yap (generateContent)
             val response = geminiApi.generateContent(
+                model = "gemini-3-flash-preview",
                 apiKey = BuildConfig.GEMINI_API_KEY,
                 request = request
             )

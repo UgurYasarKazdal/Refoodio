@@ -13,5 +13,7 @@ data class InventoryEntity(
     val expiryDate: Long,
     val quantity: Double,
     @ColumnInfo(name = "unit_id") val unit: FoodUnit,
-    @ColumnInfo(name = "category_id") val category: FoodCategory
+    @ColumnInfo(name = "category_id") val category: FoodCategory,
+    val price: Double? = null,
+    @ColumnInfo(name = "store_name") val storeName: String? = null
 )

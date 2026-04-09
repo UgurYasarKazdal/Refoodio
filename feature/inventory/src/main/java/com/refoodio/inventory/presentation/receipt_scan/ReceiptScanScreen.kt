@@ -1,5 +1,9 @@
 package com.refoodio.inventory.presentation.receipt_scan
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +44,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.refoodio.core.domain.model.inventory.FoodUnit
@@ -58,6 +64,22 @@ fun ReceiptScanScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            viewModel.handleEvent(ReceiptScanContract.Event.OnNavigateBack)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val permissionResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+        if (permissionResult != PackageManager.PERMISSION_GRANTED) {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -126,6 +148,17 @@ fun ReceiptScanScreen(
                         .padding(horizontal = RefoodioTheme.spacing.large),
                     verticalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.small)
                 ) {
+                    OutlinedTextField(
+                        value = state.storeName,
+                        onValueChange = { viewModel.handleEvent(ReceiptScanContract.Event.OnStoreNameChanged(it)) },
+                        label = { Text("Market Adı") },
+                        placeholder = { Text("Migros, A101, BİM...") },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = RefoodioTheme.spacing.small)
+                    )
+
                     Text(
                         text = "${state.scannedItems.size} ürün bulundu",
                         style = MaterialTheme.typography.labelMedium,
@@ -144,6 +177,7 @@ fun ReceiptScanScreen(
                                 onQuantityChanged = { viewModel.handleEvent(ReceiptScanContract.Event.OnItemQuantityChanged(index, it)) },
                                 onUnitChanged = { viewModel.handleEvent(ReceiptScanContract.Event.OnItemUnitChanged(index, it)) },
                                 onCategoryChanged = { viewModel.handleEvent(ReceiptScanContract.Event.OnItemCategoryChanged(index, it)) },
+                                onPriceChanged = { viewModel.handleEvent(ReceiptScanContract.Event.OnItemPriceChanged(index, it)) },
                                 onRemove = { viewModel.handleEvent(ReceiptScanContract.Event.OnItemRemoved(index)) }
                             )
                         }
@@ -169,11 +203,12 @@ private fun ReceiptItemCard(
     onQuantityChanged: (Double) -> Unit,
     onUnitChanged: (FoodUnit) -> Unit,
     onCategoryChanged: (FoodCategory) -> Unit,
+    onPriceChanged: (Double?) -> Unit,
     onRemove: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = RefoodioTheme.stroke.cardElevation)
+        elevation = CardDefaults.cardElevation(defaultElevation = RefoodioTheme.stroke.standard)
     ) {
         Column(
             modifier = Modifier.padding(RefoodioTheme.spacing.medium),
@@ -212,6 +247,15 @@ private fun ReceiptItemCard(
                     modifier = Modifier.weight(1f)
                 )
             }
+
+            OutlinedTextField(
+                value = item.price?.toString() ?: "",
+                onValueChange = { onPriceChanged(it.toDoubleOrNull()) },
+                label = { Text("Fiyat (₺)") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth()
+            )
 
             FoodCategoryDropdown(
                 selected = item.category,

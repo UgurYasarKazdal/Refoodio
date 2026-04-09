@@ -10,3 +10,7 @@ annotation class FoodApiRetrofit
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class GeminiApiRetrofit
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class GeminiOkHttpClient

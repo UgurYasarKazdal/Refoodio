@@ -37,7 +37,12 @@ fun ReceiptCameraPreview(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val imageCapture = remember { ImageCapture.Builder().build() }
+    val imageCapture = remember {
+        ImageCapture.Builder()
+            .setTargetResolution(android.util.Size(1280, 720))
+            .setJpegQuality(75)
+            .build()
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(

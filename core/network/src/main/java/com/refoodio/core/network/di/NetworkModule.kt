@@ -42,11 +42,26 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @GeminiOkHttpClient
+    fun provideGeminiOkHttpClient(): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    @Singleton
     @GeminiApiRetrofit
-    fun provideGeminiRetrofit(json: Json, okHttpClient: OkHttpClient): Retrofit {
+    fun provideGeminiRetrofit(json: Json, @GeminiOkHttpClient geminiClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://generativelanguage.googleapis.com/")
-            .client(okHttpClient)
+            .client(geminiClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }

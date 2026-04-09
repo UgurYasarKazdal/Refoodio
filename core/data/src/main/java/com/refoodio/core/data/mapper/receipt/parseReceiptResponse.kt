@@ -37,7 +37,9 @@ fun parseReceiptResponse(response: GeminiResponse): List<InventoryItem> {
             expiryDate = expiryDate,
             quantity = dto.quantity,
             unit = unit,
-            category = category
+            category = category,
+            price = dto.price,
+            storeName = dto.storeName
         )
     }
 }

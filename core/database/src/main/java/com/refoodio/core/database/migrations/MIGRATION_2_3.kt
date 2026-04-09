@@ -15,3 +15,10 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         db.execSQL("ALTER TABLE inventory ADD COLUMN category_id INTEGER NOT NULL DEFAULT ${FoodCategory.OTHER.id}")
     }
 }
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE inventory ADD COLUMN price REAL")
+        db.execSQL("ALTER TABLE inventory ADD COLUMN store_name TEXT")
+    }
+}

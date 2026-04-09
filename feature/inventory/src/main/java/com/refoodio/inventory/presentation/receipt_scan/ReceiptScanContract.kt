@@ -11,6 +11,7 @@ interface ReceiptScanContract {
     data class State(
         val phase: Phase = Phase.SCANNING,
         val scannedItems: List<InventoryItem> = emptyList(),
+        val storeName: String = "",
         val errorMessage: String? = null
     )
 
@@ -24,6 +25,8 @@ interface ReceiptScanContract {
         data class OnItemQuantityChanged(val index: Int, val quantity: Double) : Event
         data class OnItemUnitChanged(val index: Int, val unit: FoodUnit) : Event
         data class OnItemCategoryChanged(val index: Int, val category: FoodCategory) : Event
+        data class OnItemPriceChanged(val index: Int, val price: Double?) : Event
+        data class OnStoreNameChanged(val storeName: String) : Event
         data class OnItemRemoved(val index: Int) : Event
         data object OnConfirmItems : Event
         data object OnRetry : Event

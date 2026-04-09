@@ -9,5 +9,7 @@ data class ReceiptItemDto(
     val quantity: Double,
     val unit: String,
     val category: String,
-    @SerialName("shelfLifeDays") val shelfLifeDays: Int = 7
+    @SerialName("shelfLifeDays") val shelfLifeDays: Int = 7,
+    val price: Double? = null,
+    @SerialName("storeName") val storeName: String? = null
 )
