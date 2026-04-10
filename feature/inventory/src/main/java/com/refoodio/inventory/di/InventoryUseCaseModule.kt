@@ -69,4 +69,10 @@ object InventoryUseCaseModule {
         inventoryRepository: InventoryRepository,
         validateInventory: ValidateInventoryUseCase
     ): InsertInventoryUseCase = InsertInventoryUseCase(inventoryRepository, validateInventory)
+
+    @Provides
+    fun provideUpdateInventoryUseCase(
+        inventoryRepository: InventoryRepository,
+        validateInventory: ValidateInventoryUseCase
+    ): UpdateInventoryUseCase = UpdateInventoryUseCase(inventoryRepository, validateInventory)
 }

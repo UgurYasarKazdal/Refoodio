@@ -11,6 +11,12 @@ interface InventoryListContract {
 
     enum class UrgencyLevel { NORMAL, WARNING, CRITICAL }
 
+    enum class SortOption(val labelTr: String) {
+        EXPIRY_DATE("Son Kullanma"),
+        NAME("İsim"),
+        QUANTITY("Miktar")
+    }
+
     data class State(
         val isLoading: Boolean = false,
         val criticalItems: List<InventoryItemUiModel> = emptyList(),
@@ -19,6 +25,9 @@ interface InventoryListContract {
         val selectedIds: Set<Int> = emptySet(),
         val errorMessage: String? = null,
         val showDeleteConfirmation: Boolean = false,
+        val searchQuery: String = "",
+        val sortOption: SortOption = SortOption.EXPIRY_DATE,
+        val consumeItem: InventoryItemUiModel? = null,
         // Barkod kamera
         val isCameraVisible: Boolean = false,
         val isBarcodeLoading: Boolean = false,
@@ -62,6 +71,11 @@ interface InventoryListContract {
         data class ToggleGroupExpansion(val foodGroup: FoodGroup) : Event
         data class OnEditItem(val itemId: Int) : Event
         data class OnDeleteSingleItem(val id: Int) : Event
+        data class OnSearchQueryChanged(val query: String) : Event
+        data class OnSortOptionChanged(val option: SortOption) : Event
+        data class OnConsumeClick(val id: Int) : Event
+        data class OnConsumeConfirm(val amount: Double) : Event
+        data object OnConsumeDismiss : Event
     }
 
     sealed interface SideEffect {

@@ -93,15 +93,10 @@ fun InventoryContent(
                             InventoryItem(
                                 item = uiModel,
                                 isSelected = state.selectedIds.contains(uiModel.id),
-                                onToggleSelect = {
-                                    onEvent(InventoryListContract.Event.OnToggleSelect(it))
-                                },
-                                onEditItem = {
-                                    onEvent(InventoryListContract.Event.OnEditItem(it))
-                                },
-                                onDeleteItem = {
-                                    onEvent(InventoryListContract.Event.OnDeleteSingleItem(it))
-                                }
+                                onToggleSelect = { onEvent(InventoryListContract.Event.OnToggleSelect(it)) },
+                                onEditItem = { onEvent(InventoryListContract.Event.OnEditItem(it)) },
+                                onDeleteItem = { onEvent(InventoryListContract.Event.OnDeleteSingleItem(it)) },
+                                onConsumeItem = { onEvent(InventoryListContract.Event.OnConsumeClick(it)) }
                             )
                         }
                     }

@@ -10,6 +10,7 @@ import com.refoodio.core.domain.model.inventory.toFoodGroup
 import com.refoodio.core.domain.model.recipe.FoodCategory
 import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcodeUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
+import com.refoodio.core.domain.use_case.inventory.addInventory.UpdateInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.InventoryListUseCases
 import com.refoodio.core.domain.util.Resource
 import com.refoodio.core.domain.util.formatExpiryDate
@@ -35,6 +36,7 @@ class InventoryViewModel @Inject constructor(
     private val inventoryListUseCases: InventoryListUseCases,
     private val getFoodByBarcode: GetFoodByBarcodeUseCase,
     private val insertInventory: InsertInventoryUseCase,
+    private val updateInventory: UpdateInventoryUseCase,
     private val app: Application
 ) : ViewModel() {
 
@@ -44,8 +46,37 @@ class InventoryViewModel @Inject constructor(
     private val _state = MutableStateFlow(InventoryListContract.State())
     val state = _state.asStateFlow()
 
+    // Ham liste — arama/sıralama bu üzerinden hesaplanır
+    private var allItems: List<InventoryListContract.InventoryItemUiModel> = emptyList()
+
     init {
         loadInventories()
+    }
+
+    private fun applyFilters() {
+        val query = _state.value.searchQuery.trim().lowercase()
+        val sort = _state.value.sortOption
+
+        val filtered = if (query.isEmpty()) allItems
+        else allItems.filter { it.name.lowercase().contains(query) }
+
+        val sorted = when (sort) {
+            InventoryListContract.SortOption.EXPIRY_DATE ->
+                filtered.sortedBy { it.originalItem.expiryDate }
+            InventoryListContract.SortOption.NAME ->
+                filtered.sortedBy { it.name.lowercase() }
+            InventoryListContract.SortOption.QUANTITY ->
+                filtered.sortedByDescending { it.originalItem.quantity }
+        }
+
+        val criticalList = sorted.filter { it.isCritical }
+        val groupedMap = sorted
+            .groupBy { it.category.toFoodGroup() }
+            .toSortedMap(compareBy { it.ordinal })
+
+        _state.update {
+            it.copy(criticalItems = criticalList, sectionedItems = groupedMap)
+        }
     }
 
     fun handleEvent(event: InventoryListContract.Event) {
@@ -191,6 +222,39 @@ class InventoryViewModel @Inject constructor(
                 deleteInventory(listOf(event.id))
             }
 
+            is InventoryListContract.Event.OnSearchQueryChanged -> {
+                _state.update { it.copy(searchQuery = event.query) }
+                applyFilters()
+            }
+
+            is InventoryListContract.Event.OnSortOptionChanged -> {
+                _state.update { it.copy(sortOption = event.option) }
+                applyFilters()
+            }
+
+            is InventoryListContract.Event.OnConsumeClick -> {
+                val item = allItems.find { it.id == event.id } ?: return
+                _state.update { it.copy(consumeItem = item) }
+            }
+
+            is InventoryListContract.Event.OnConsumeConfirm -> {
+                val item = _state.value.consumeItem ?: return
+                _state.update { it.copy(consumeItem = null) }
+                val newQty = (item.originalItem.quantity - event.amount).coerceAtLeast(0.0)
+                val updated = item.originalItem.copy(quantity = newQty)
+                updateInventory(updated).onEach { result ->
+                    if (result is Resource.Error) {
+                        _effect.send(InventoryListContract.SideEffect.ShowSnackbar(
+                            UiText.DynamicString("Güncellenemedi")
+                        ))
+                    }
+                }.launchIn(viewModelScope)
+            }
+
+            is InventoryListContract.Event.OnConsumeDismiss -> {
+                _state.update { it.copy(consumeItem = null) }
+            }
+
             else -> Unit
         }
     }
@@ -206,7 +270,7 @@ class InventoryViewModel @Inject constructor(
                     viewModelScope.launch(Dispatchers.Default) {
                         // Hesaplamayı arka plana al
                         val now = System.currentTimeMillis()
-                        val allItems = result.data.map { item ->
+                        val mapped = result.data.map { item ->
                             val group = item.category.toFoodGroup()
                             val baseColor = Color(app.resources.getColor(group.colorResId, null))
                             val daysLeft = (item.expiryDate - now) / (24 * 60 * 60 * 1000L)
@@ -236,17 +300,9 @@ class InventoryViewModel @Inject constructor(
                             )
                         }
 
-                        val criticalList = allItems.filter { it.isCritical }
-                        val groupedMap = allItems.groupBy { it.category.toFoodGroup() }
-                            .toSortedMap(compareBy { it.ordinal }) // Enum sırasına göre düzenli gösterim
-
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                criticalItems = criticalList,
-                                sectionedItems = groupedMap
-                            )
-                        }
+                        allItems = mapped
+                        _state.update { it.copy(isLoading = false) }
+                        applyFilters()
                     }
                 }
 

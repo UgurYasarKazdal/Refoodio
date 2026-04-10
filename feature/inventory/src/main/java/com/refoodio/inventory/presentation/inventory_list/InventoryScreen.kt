@@ -27,7 +27,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -37,6 +42,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,9 +73,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Button
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
@@ -203,19 +206,38 @@ fun InventoryScreen(
             )
         }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            InventoryContent(state = state, onEvent = viewModel::handleEvent)
+            SearchAndSortBar(
+                query = state.searchQuery,
+                sortOption = state.sortOption,
+                onQueryChange = { viewModel.handleEvent(InventoryListContract.Event.OnSearchQueryChanged(it)) },
+                onSortOptionChange = { viewModel.handleEvent(InventoryListContract.Event.OnSortOptionChanged(it)) }
+            )
 
-            RecipeWizardBar(
-                selectedCount = selectedCount,
-                onFindRecipesClick = { viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick) },
-                onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
-                onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete) },
-                modifier = Modifier.align(Alignment.BottomCenter)
+            Box(modifier = Modifier.weight(1f)) {
+                InventoryContent(state = state, onEvent = viewModel::handleEvent)
+
+                RecipeWizardBar(
+                    selectedCount = selectedCount,
+                    onFindRecipesClick = { viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick) },
+                    onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
+                    onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete) },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+        }
+
+        // Tüketim dialogu
+        val consumeItem = state.consumeItem
+        if (consumeItem != null) {
+            ConsumeDialog(
+                item = consumeItem,
+                onConfirm = { viewModel.handleEvent(InventoryListContract.Event.OnConsumeConfirm(it)) },
+                onDismiss = { viewModel.handleEvent(InventoryListContract.Event.OnConsumeDismiss) }
             )
         }
     }
@@ -430,4 +452,105 @@ private fun FabOption(
             Icon(icon, contentDescription = label, modifier = Modifier.size(20.dp))
         }
     }
+}
+
+@Composable
+private fun SearchAndSortBar(
+    query: String,
+    sortOption: InventoryListContract.SortOption,
+    onQueryChange: (String) -> Unit,
+    onSortOptionChange: (InventoryListContract.SortOption) -> Unit
+) {
+    var showSortMenu by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text("Ürün ara...") },
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(Icons.Default.Close, contentDescription = null)
+                    }
+                }
+            }
+        )
+
+        Box {
+            IconButton(onClick = { showSortMenu = true }) {
+                Icon(Icons.Default.Sort, contentDescription = "Sırala")
+            }
+            DropdownMenu(
+                expanded = showSortMenu,
+                onDismissRequest = { showSortMenu = false }
+            ) {
+                InventoryListContract.SortOption.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.labelTr) },
+                        leadingIcon = {
+                            RadioButton(
+                                selected = sortOption == option,
+                                onClick = null
+                            )
+                        },
+                        onClick = {
+                            onSortOptionChange(option)
+                            showSortMenu = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConsumeDialog(
+    item: InventoryListContract.InventoryItemUiModel,
+    onConfirm: (Double) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var amountText by remember { mutableStateOf("") }
+    val maxQty = item.originalItem.quantity
+    val amount = amountText.toDoubleOrNull() ?: 0.0
+    val isValid = amount > 0.0 && amount <= maxQty
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Tüket: ${item.name}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Mevcut miktar: $maxQty ${item.unit.name}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = amountText,
+                    onValueChange = { amountText = it },
+                    label = { Text("Tüketilen miktar (${item.unit.name})") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    isError = amountText.isNotEmpty() && !isValid
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(amount) }, enabled = isValid) {
+                Text("Tüket")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("İptal") }
+        }
+    )
 }

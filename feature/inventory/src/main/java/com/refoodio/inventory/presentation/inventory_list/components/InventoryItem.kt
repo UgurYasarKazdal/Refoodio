@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -49,6 +50,7 @@ fun InventoryItem(
     onToggleSelect: (Int) -> Unit,
     onEditItem: (Int) -> Unit,
     onDeleteItem: (Int) -> Unit,
+    onConsumeItem: (Int) -> Unit,
     isSelected: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -134,28 +136,22 @@ fun InventoryItem(
             onDismissRequest = { showMenu = false }
         ) {
             DropdownMenuItem(
+                text = { Text("Tüket") },
+                leadingIcon = { Icon(Icons.Default.Restaurant, contentDescription = null) },
+                onClick = { showMenu = false; onConsumeItem(item.id) }
+            )
+            DropdownMenuItem(
                 text = { Text("Düzenle") },
-                leadingIcon = {
-                    Icon(Icons.Default.Edit, contentDescription = null)
-                },
-                onClick = {
-                    showMenu = false
-                    onEditItem(item.id)
-                }
+                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                onClick = { showMenu = false; onEditItem(item.id) }
             )
             DropdownMenuItem(
                 text = { Text("Sil", color = MaterialTheme.colorScheme.error) },
                 leadingIcon = {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                    Icon(Icons.Default.Delete, contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error)
                 },
-                onClick = {
-                    showMenu = false
-                    onDeleteItem(item.id)
-                }
+                onClick = { showMenu = false; onDeleteItem(item.id) }
             )
         }
     }
