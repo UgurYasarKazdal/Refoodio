@@ -231,7 +231,8 @@ fun AddInventoryScreen(
         Spacer(modifier = Modifier.height(RefoodioTheme.spacing.extraLarge))
 
         RefoodioPrimaryButton(
-            stringResource(R.string.add_inventory_save_button),
+            text = if (state.isEditMode) "Değişiklikleri Kaydet"
+                   else stringResource(R.string.add_inventory_save_button),
             onClick = { viewModel.handleEvent(InventoryAddContract.Event.OnSaveInventory) },
             isLoading = state.isLoading,
             isEnabled = state.form.selectedFoodName.isNotEmpty()

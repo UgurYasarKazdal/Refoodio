@@ -10,6 +10,9 @@ object NavigationRoutes {
     object InventoryAddRoute
 
     @Serializable
+    data class InventoryEditRoute(val itemId: Int)
+
+    @Serializable
     data class RecipeRoute(val selectedIds: String? = null)
     @Serializable
     object ReceiptScanRoute

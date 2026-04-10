@@ -9,6 +9,7 @@ import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcode
 import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.core.domain.use_case.inventory.addInventory.ScanReceiptUseCase
+import com.refoodio.core.domain.use_case.inventory.addInventory.UpdateInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.ValidateInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.DeleteSelectedInventoriesUseCase
@@ -47,6 +48,8 @@ object InventoryUseCaseModule {
         validateInventory: ValidateInventoryUseCase
     ): InventoryAddUseCases = InventoryAddUseCases(
         insertInventory = InsertInventoryUseCase(inventoryRepository, validateInventory),
+        updateInventory = UpdateInventoryUseCase(inventoryRepository, validateInventory),
+        getInventoryById = { id -> inventoryRepository.getInventoryById(id) },
         suggestionsUseCase = GetFoodSuggestionsUseCase(catalogRepository),
         getFoodByBarcodeUseCase = GetFoodByBarcodeUseCase(foodRepository)
     )

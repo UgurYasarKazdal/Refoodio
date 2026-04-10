@@ -1,12 +1,15 @@
 package com.refoodio.inventory.presentation.add_inventory
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.model.recipe.FoodCategory
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
 import com.refoodio.core.domain.util.Resource
 import com.refoodio.core.domain.util.daysToMillis
+import com.refoodio.core.navigation.NavigationRoutes
 import com.refoodio.core.ui.util.UiText
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.util.asInventoryErrorText
@@ -27,8 +30,10 @@ import javax.inject.Inject
 import kotlin.math.round
 
 @HiltViewModel
-class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases: InventoryAddUseCases) :
-    ViewModel() {
+class InventoryAddViewModel @Inject constructor(
+    private val inventoryAddUseCases: InventoryAddUseCases,
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
     private val _effect = Channel<InventoryAddContract.SideEffect>()
     val effect = _effect.receiveAsFlow()
@@ -39,6 +44,34 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
 
     init {
         observeQuery()
+        tryLoadEditItem()
+    }
+
+    private fun tryLoadEditItem() {
+        val route = runCatching {
+            savedStateHandle.toRoute<NavigationRoutes.InventoryEditRoute>()
+        }.getOrNull() ?: return
+
+        val itemId = route.itemId
+        if (itemId == -1) return
+
+        viewModelScope.launch {
+            val item = inventoryAddUseCases.getInventoryById(itemId) ?: return@launch
+            _state.update {
+                it.copy(
+                    isEditMode = true,
+                    editItemId = itemId,
+                    searchQuery = item.name,
+                    form = it.form.copy(
+                        selectedFoodName = item.name,
+                        quantity = item.quantity,
+                        unit = item.unit,
+                        category = item.category,
+                        expiryDate = item.expiryDate
+                    )
+                )
+            }
+        }
     }
 
     private fun observeQuery() {
@@ -161,18 +194,25 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
         val currentState = _state.value
         if (currentState.isLoading) return
         if (currentState.form.selectedFoodName.isBlank()) return
-        val newItem = InventoryItem(
+
+        val item = InventoryItem(
+            id = if (currentState.isEditMode) currentState.editItemId else 0,
             name = currentState.form.selectedFoodName,
             expiryDate = currentState.form.expiryDate ?: System.currentTimeMillis(),
             quantity = currentState.form.quantity.toDouble(),
             unit = currentState.form.unit,
             category = currentState.form.category,
         )
-        inventoryAddUseCases.insertInventory(newItem).onEach { result ->
+
+        val operation = if (currentState.isEditMode) {
+            inventoryAddUseCases.updateInventory(item)
+        } else {
+            inventoryAddUseCases.insertInventory(item)
+        }
+
+        operation.onEach { result ->
             when (result) {
-                is Resource.Loading -> {
-                    _state.update { it.copy(isLoading = true) }
-                }
+                is Resource.Loading -> _state.update { it.copy(isLoading = true) }
 
                 is Resource.Success -> {
                     _state.update {
@@ -183,13 +223,11 @@ class InventoryAddViewModel @Inject constructor(private val inventoryAddUseCases
                             errorMessage = null
                         )
                     }
-
                     _effect.send(InventoryAddContract.SideEffect.NavigateBack)
                 }
 
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
-                    val uiText = result.errorType.asInventoryErrorText()
                 }
             }
         }.launchIn(viewModelScope)

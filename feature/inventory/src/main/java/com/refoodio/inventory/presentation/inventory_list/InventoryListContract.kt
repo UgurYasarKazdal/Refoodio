@@ -8,6 +8,9 @@ import com.refoodio.core.domain.model.recipe.FoodCategory
 import com.refoodio.core.ui.util.UiText
 
 interface InventoryListContract {
+
+    enum class UrgencyLevel { NORMAL, WARNING, CRITICAL }
+
     data class State(
         val isLoading: Boolean = false,
         val criticalItems: List<InventoryItemUiModel> = emptyList(),
@@ -15,10 +18,11 @@ interface InventoryListContract {
         val expandedGroups: Set<FoodGroup> = FoodGroup.values().toSet(),
         val selectedIds: Set<Int> = emptySet(),
         val errorMessage: String? = null,
+        val showDeleteConfirmation: Boolean = false,
         // Barkod kamera
         val isCameraVisible: Boolean = false,
         val isBarcodeLoading: Boolean = false,
-        val scannedItem: InventoryItem? = null  // barkoddan gelen ürün onay dialogu için
+        val scannedItem: InventoryItem? = null
     )
 
     data class InventoryItemUiModel(
@@ -26,30 +30,25 @@ interface InventoryListContract {
         val name: String,
         val quantityText: UiText,
         val formattedDate: UiText,
-        val isCritical: Boolean,
+        val urgencyLevel: UrgencyLevel,
         val unit: FoodUnit,
         val category: FoodCategory,
         val originalItem: InventoryItem,
-        val color: Color, // ID yerine doğrudan Compose Color nesnesi
+        val color: Color,
         val backgroundColor: Color,
-        val groupIcon: Int // cop
-    )
+        val groupIcon: Int
+    ) {
+        val isCritical: Boolean get() = urgencyLevel == UrgencyLevel.CRITICAL
+    }
 
     sealed interface Event {
         data object LoadInventories : Event
-
-        // Silme işlemi için ID yeterli olacaktır
+        data object OnRequestDelete : Event
+        data object OnDeleteDismissed : Event
         data object DeleteInventory : Event
-
-        // Kart seçimi/iptali için yeni event
         data class OnToggleSelect(val id: Int) : Event
-
-        // Sihirbaz barındaki "Tarif Bul" butonu
         data object OnFindRecipesClick : Event
-
-        // Tüm seçimleri temizle
         data object OnClearSelection : Event
-
         data object NavigateAddInventory : Event
         data object NavigateToReceiptScan : Event
         data object OnToggleCamera : Event
@@ -60,8 +59,9 @@ interface InventoryListContract {
         data class OnScannedItemCategoryChanged(val category: FoodCategory) : Event
         data object OnConfirmBarcodeItem : Event
         data object OnDismissBarcodeItem : Event
-
         data class ToggleGroupExpansion(val foodGroup: FoodGroup) : Event
+        data class OnEditItem(val itemId: Int) : Event
+        data class OnDeleteSingleItem(val id: Int) : Event
     }
 
     sealed interface SideEffect {
@@ -69,5 +69,6 @@ interface InventoryListContract {
         data class NavigateToRecipesWithFilters(val selectedIds: String) : SideEffect
         data object NavigateToAddInventory : SideEffect
         data object NavigateToReceiptScan : SideEffect
+        data class NavigateToEditInventory(val itemId: Int) : SideEffect
     }
 }

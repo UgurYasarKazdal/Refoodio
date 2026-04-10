@@ -28,6 +28,18 @@ class InventoryRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateInventory(inventoryItem: InventoryItem) {
+        withContext(Dispatchers.IO) {
+            inventoryDao.updateInventory(inventoryItem.toEntity())
+        }
+    }
+
+    override suspend fun getInventoryById(id: Int): InventoryItem? {
+        return withContext(Dispatchers.IO) {
+            inventoryDao.getInventoryById(id)?.toDomain()
+        }
+    }
+
     override suspend fun deleteInventory(inventoryItem: InventoryItem) {
         withContext(Dispatchers.IO) {
             inventoryDao.deleteInventory(inventoryItem.toEntity())

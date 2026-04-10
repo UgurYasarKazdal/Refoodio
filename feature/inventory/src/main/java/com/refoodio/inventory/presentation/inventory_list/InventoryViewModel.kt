@@ -50,7 +50,16 @@ class InventoryViewModel @Inject constructor(
 
     fun handleEvent(event: InventoryListContract.Event) {
         when (event) {
+            is InventoryListContract.Event.OnRequestDelete -> {
+                _state.update { it.copy(showDeleteConfirmation = true) }
+            }
+
+            is InventoryListContract.Event.OnDeleteDismissed -> {
+                _state.update { it.copy(showDeleteConfirmation = false) }
+            }
+
             is InventoryListContract.Event.DeleteInventory -> {
+                _state.update { it.copy(showDeleteConfirmation = false) }
                 val idsToDelete = state.value.selectedIds.toList()
                 if (idsToDelete.isNotEmpty()) {
                     deleteInventory(idsToDelete)
@@ -172,6 +181,16 @@ class InventoryViewModel @Inject constructor(
                 _state.update { it.copy(expandedGroups = newExpandedGroups) }
             }
 
+            is InventoryListContract.Event.OnEditItem -> {
+                viewModelScope.launch {
+                    _effect.send(InventoryListContract.SideEffect.NavigateToEditInventory(event.itemId))
+                }
+            }
+
+            is InventoryListContract.Event.OnDeleteSingleItem -> {
+                deleteInventory(listOf(event.id))
+            }
+
             else -> Unit
         }
     }
@@ -186,13 +205,16 @@ class InventoryViewModel @Inject constructor(
                 is Resource.Success -> {
                     viewModelScope.launch(Dispatchers.Default) {
                         // Hesaplamayı arka plana al
+                        val now = System.currentTimeMillis()
                         val allItems = result.data.map { item ->
                             val group = item.category.toFoodGroup()
-                            val baseColor = Color(
-                                app.resources.getColor(
-                                    group.colorResId, null
-                                )
-                            ) // Bir kez hesapla
+                            val baseColor = Color(app.resources.getColor(group.colorResId, null))
+                            val daysLeft = (item.expiryDate - now) / (24 * 60 * 60 * 1000L)
+                            val urgency = when {
+                                daysLeft <= 3 -> InventoryListContract.UrgencyLevel.CRITICAL
+                                daysLeft <= 7 -> InventoryListContract.UrgencyLevel.WARNING
+                                else -> InventoryListContract.UrgencyLevel.NORMAL
+                            }
 
                             InventoryListContract.InventoryItemUiModel(
                                 id = item.id,
@@ -204,7 +226,7 @@ class InventoryViewModel @Inject constructor(
                                     R.string.add_inventory_expiry_date_short,
                                     item.expiryDate.formatExpiryDate()
                                 ),
-                                isCritical = item.isNearExpiry(),
+                                urgencyLevel = urgency,
                                 originalItem = item,
                                 category = item.category,
                                 unit = item.unit,

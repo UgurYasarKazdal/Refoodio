@@ -67,6 +67,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Button
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
@@ -83,6 +86,7 @@ import kotlinx.coroutines.launch
 fun InventoryScreen(
     viewModel: InventoryViewModel = hiltViewModel(),
     onNavigateToAddInventory: () -> Unit,
+    onNavigateToEditInventory: (Int) -> Unit,
     onNavigateToReceiptScan: () -> Unit,
     onNavigateToRecipes: (String) -> Unit
 ) {
@@ -108,6 +112,7 @@ fun InventoryScreen(
                 is InventoryListContract.SideEffect.ShowSnackbar ->
                     scope.launch { snackbarHostState.showSnackbar(effect.message.asString(context)) }
                 is InventoryListContract.SideEffect.NavigateToAddInventory -> onNavigateToAddInventory()
+                is InventoryListContract.SideEffect.NavigateToEditInventory -> onNavigateToEditInventory(effect.itemId)
                 is InventoryListContract.SideEffect.NavigateToRecipesWithFilters -> onNavigateToRecipes(effect.selectedIds)
                 is InventoryListContract.SideEffect.NavigateToReceiptScan -> onNavigateToReceiptScan()
             }
@@ -153,6 +158,25 @@ fun InventoryScreen(
         )
     }
 
+    if (state.showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { viewModel.handleEvent(InventoryListContract.Event.OnDeleteDismissed) },
+            title = { Text("Ürünleri Sil") },
+            text = { Text("${selectedCount} ürün envanterden kalıcı olarak silinecek. Onaylıyor musun?") },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.handleEvent(InventoryListContract.Event.DeleteInventory) },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Sil") }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.handleEvent(InventoryListContract.Event.OnDeleteDismissed) }) {
+                    Text("İptal")
+                }
+            }
+        )
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
@@ -190,7 +214,7 @@ fun InventoryScreen(
                 selectedCount = selectedCount,
                 onFindRecipesClick = { viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick) },
                 onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
-                onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.DeleteInventory) },
+                onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete) },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }

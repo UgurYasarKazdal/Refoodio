@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.Flow
 interface InventoryRepository {
     fun getAllInventories(): Flow<List<InventoryItem>>
     suspend fun addInventory(inventoryItem: InventoryItem)
-
+    suspend fun updateInventory(inventoryItem: InventoryItem)
+    suspend fun getInventoryById(id: Int): InventoryItem?
     suspend fun deleteInventory(inventoryItem: InventoryItem)
-
     suspend fun deleteItems(idList: List<Int>)
 }

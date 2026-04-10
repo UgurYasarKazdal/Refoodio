@@ -19,6 +19,9 @@ internal class InventoryNavImpl @Inject constructor() : FeatureNavEntry {
                 onNavigateToAddInventory = {
                     navController.navigate(NavigationRoutes.InventoryAddRoute)
                 },
+                onNavigateToEditInventory = { itemId ->
+                    navController.navigate(NavigationRoutes.InventoryEditRoute(itemId))
+                },
                 onNavigateToReceiptScan = {
                     navController.navigate(NavigationRoutes.ReceiptScanRoute)
                 },
@@ -28,14 +31,13 @@ internal class InventoryNavImpl @Inject constructor() : FeatureNavEntry {
             )
         }
         navGraphBuilder.composable<NavigationRoutes.InventoryAddRoute> {
-            AddInventoryScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            AddInventoryScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        navGraphBuilder.composable<NavigationRoutes.InventoryEditRoute> {
+            AddInventoryScreen(onNavigateBack = { navController.popBackStack() })
         }
         navGraphBuilder.composable<NavigationRoutes.ReceiptScanRoute> {
-            ReceiptScanScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            ReceiptScanScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

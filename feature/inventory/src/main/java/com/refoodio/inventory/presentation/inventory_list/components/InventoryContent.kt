@@ -3,6 +3,7 @@ package com.refoodio.inventory.presentation.inventory_list.components
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +12,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +27,8 @@ import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun InventoryContent(
-    state: InventoryListContract.State, onEvent: (InventoryListContract.Event) -> Unit
+    state: InventoryListContract.State,
+    onEvent: (InventoryListContract.Event) -> Unit
 ) {
     if (state.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -35,7 +39,17 @@ fun InventoryContent(
 
     if (state.criticalItems.isEmpty() && state.sectionedItems.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.empty_kitchen_message))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(R.string.empty_kitchen_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { onEvent(InventoryListContract.Event.NavigateAddInventory) }) {
+                    Text("İlk Ürünü Ekle")
+                }
+            }
         }
     } else {
         LazyVerticalGrid(
@@ -64,9 +78,13 @@ fun InventoryContent(
                 val isExpanded = state.expandedGroups.contains(foodGroup)
                 item(span = { GridItemSpan(2) }) {
                     FoodGroupHeader(
-                        foodGroup, isExpanded = isExpanded, onHeaderClick = {
+                        foodGroup = foodGroup,
+                        itemCount = items.size,
+                        isExpanded = isExpanded,
+                        onHeaderClick = {
                             onEvent(InventoryListContract.Event.ToggleGroupExpansion(foodGroup))
-                        })
+                        }
+                    )
                 }
 
                 if (isExpanded) {
@@ -76,12 +94,15 @@ fun InventoryContent(
                                 item = uiModel,
                                 isSelected = state.selectedIds.contains(uiModel.id),
                                 onToggleSelect = {
-                                    onEvent(
-                                        InventoryListContract.Event.OnToggleSelect(
-                                            it
-                                        )
-                                    )
-                                })
+                                    onEvent(InventoryListContract.Event.OnToggleSelect(it))
+                                },
+                                onEditItem = {
+                                    onEvent(InventoryListContract.Event.OnEditItem(it))
+                                },
+                                onDeleteItem = {
+                                    onEvent(InventoryListContract.Event.OnDeleteSingleItem(it))
+                                }
+                            )
                         }
                     }
                 }

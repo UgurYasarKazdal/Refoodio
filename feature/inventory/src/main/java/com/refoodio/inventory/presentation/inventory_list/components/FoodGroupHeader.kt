@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.refoodio.core.domain.model.inventory.FoodGroup
 
 @Composable
-fun FoodGroupHeader(foodGroup: FoodGroup, isExpanded: Boolean, onHeaderClick: () -> Unit) {
+fun FoodGroupHeader(foodGroup: FoodGroup, itemCount: Int, isExpanded: Boolean, onHeaderClick: () -> Unit) {
     // Okun dönme animasyonu
     val rotationState by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
@@ -49,15 +49,25 @@ fun FoodGroupHeader(foodGroup: FoodGroup, isExpanded: Boolean, onHeaderClick: ()
             )
             Text(
                 text = stringResource(foodGroup.titleResId),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .weight(1f),
                 style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Text(
+                text = "$itemCount",
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
-                modifier = Modifier.rotate(rotationState),
+                modifier = Modifier
+                    .rotate(rotationState)
+                    .padding(end = 8.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

@@ -12,7 +12,8 @@ interface InventoryAddContract {
         val searchQuery: String = "",
         val suggestions: List<FoodItem> = emptyList(),
         val errorMessage: String? = null,
-
+        val isEditMode: Boolean = false,
+        val editItemId: Int = -1,
         val form: InventoryForm = InventoryForm()
     )
 
