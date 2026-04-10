@@ -16,4 +16,3 @@ internal class HomeNavImpl @Inject constructor() : FeatureNavEntry {
         }
     }
 }
-
