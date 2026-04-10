@@ -64,8 +64,7 @@ import com.refoodio.inventory.presentation.add_inventory.components.SelectedInve
 @Composable
 fun AddInventoryScreen(
     viewModel: InventoryAddViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit,
-    onNavigateToReceiptScan: () -> Unit
+    onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -114,17 +113,7 @@ fun AddInventoryScreen(
     ) {
         SearchAndBarcodeField(
             searchQuery = state.searchQuery,
-            onQueryChange = { viewModel.handleEvent(InventoryAddContract.Event.OnQueryChanged(it)) },
-            onBarcodeClick = {
-                val permissionCheckResult =
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                    viewModel.handleEvent(InventoryAddContract.Event.OnToggleCamera)
-                } else {
-                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                }
-            },
-            onReceiptClick = onNavigateToReceiptScan
+            onQueryChange = { viewModel.handleEvent(InventoryAddContract.Event.OnQueryChanged(it)) }
         )
 
         if (state.isCameraVisible) {

@@ -4,11 +4,17 @@ import android.app.Application
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.refoodio.core.domain.model.inventory.FoodUnit
+import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.model.inventory.toFoodGroup
+import com.refoodio.core.domain.model.recipe.FoodCategory
+import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcodeUseCase
+import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.inventoryList.InventoryListUseCases
 import com.refoodio.core.domain.util.Resource
 import com.refoodio.core.domain.util.formatExpiryDate
 import com.refoodio.core.ui.util.UiText
+import com.refoodio.core.ui.util.UiText.DynamicString
 import com.refoodio.core.ui.util.formatQuantity
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.util.asInventoryErrorText
@@ -26,7 +32,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InventoryViewModel @Inject constructor(
-    private val inventoryListUseCases: InventoryListUseCases, private val app: Application
+    private val inventoryListUseCases: InventoryListUseCases,
+    private val getFoodByBarcode: GetFoodByBarcodeUseCase,
+    private val insertInventory: InsertInventoryUseCase,
+    private val app: Application
 ) : ViewModel() {
 
     private val _effect = Channel<InventoryListContract.SideEffect>()
@@ -71,6 +80,75 @@ class InventoryViewModel @Inject constructor(
                 viewModelScope.launch {
                     _effect.send(InventoryListContract.SideEffect.NavigateToAddInventory)
                 }
+            }
+
+            is InventoryListContract.Event.NavigateToReceiptScan -> {
+                viewModelScope.launch {
+                    _effect.send(InventoryListContract.SideEffect.NavigateToReceiptScan)
+                }
+            }
+
+            is InventoryListContract.Event.OnToggleCamera -> {
+                _state.update { it.copy(isCameraVisible = !it.isCameraVisible) }
+            }
+
+            is InventoryListContract.Event.OnBarcodeDetected -> {
+                _state.update { it.copy(isCameraVisible = false, isBarcodeLoading = true) }
+                viewModelScope.launch {
+                    getFoodByBarcode(event.barcode)
+                        .onSuccess { foodItem ->
+                            val unit = FoodUnit.entries.find {
+                                it.name.equals(foodItem.unit, ignoreCase = true)
+                            } ?: FoodUnit.PIECE
+                            val category = FoodCategory.fromId(foodItem.categoryId)
+                            val expiryDate = System.currentTimeMillis() +
+                                    foodItem.defaultShelfLife * 24 * 60 * 60 * 1000L
+                            _state.update {
+                                it.copy(
+                                    isBarcodeLoading = false,
+                                    scannedItem = InventoryItem(
+                                        name = foodItem.name,
+                                        quantity = 1.0,
+                                        unit = unit,
+                                        category = category,
+                                        expiryDate = expiryDate
+                                    )
+                                )
+                            }
+                        }
+                        .onFailure { e ->
+                            _state.update { it.copy(isBarcodeLoading = false) }
+                            _effect.send(
+                                InventoryListContract.SideEffect.ShowSnackbar(
+                                    UiText.DynamicString(e.message ?: "Ürün bulunamadı")
+                                )
+                            )
+                        }
+                }
+            }
+
+            is InventoryListContract.Event.OnConfirmBarcodeItem -> {
+                val item = _state.value.scannedItem ?: return
+                _state.update { it.copy(scannedItem = null) }
+                insertInventory(item).onEach { result ->
+                    when (result) {
+                        is Resource.Success -> _effect.send(
+                            InventoryListContract.SideEffect.ShowSnackbar(
+                                UiText.DynamicString("${item.name} eklendi")
+                            )
+                        )
+                        is Resource.Error -> _effect.send(
+                            InventoryListContract.SideEffect.ShowSnackbar(
+                                UiText.DynamicString("Eklenemedi")
+                            )
+                        )
+                        else -> Unit
+                    }
+                }.launchIn(viewModelScope)
+            }
+
+            is InventoryListContract.Event.OnDismissBarcodeItem -> {
+                _state.update { it.copy(scannedItem = null) }
             }
 
             is InventoryListContract.Event.ToggleGroupExpansion -> {

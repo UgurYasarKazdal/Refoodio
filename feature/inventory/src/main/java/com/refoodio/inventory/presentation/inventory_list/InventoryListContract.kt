@@ -10,14 +10,15 @@ import com.refoodio.core.ui.util.UiText
 interface InventoryListContract {
     data class State(
         val isLoading: Boolean = false,
-        // 1. Kritik Bölüm: SKT'si yaklaşan ürünler (Duplicate gösterim için)
         val criticalItems: List<InventoryItemUiModel> = emptyList(),
-        // 2. Ana Bölüm: FoodGroup başlıklarına göre gruplanmış envanter
         val sectionedItems: Map<FoodGroup, List<InventoryItemUiModel>> = emptyMap(),
-        val expandedGroups: Set<FoodGroup> = FoodGroup.values().toSet(), // Başlangıçta hepsi açık
-        // 3. Seçim Durumu: Sihirbaz Barı için seçilen ürünlerin ID set'i
+        val expandedGroups: Set<FoodGroup> = FoodGroup.values().toSet(),
         val selectedIds: Set<Int> = emptySet(),
-        val errorMessage: String? = null
+        val errorMessage: String? = null,
+        // Barkod kamera
+        val isCameraVisible: Boolean = false,
+        val isBarcodeLoading: Boolean = false,
+        val scannedItem: InventoryItem? = null  // barkoddan gelen ürün onay dialogu için
     )
 
     data class InventoryItemUiModel(
@@ -50,16 +51,19 @@ interface InventoryListContract {
         data object OnClearSelection : Event
 
         data object NavigateAddInventory : Event
+        data object NavigateToReceiptScan : Event
+        data object OnToggleCamera : Event
+        data class OnBarcodeDetected(val barcode: String) : Event
+        data object OnConfirmBarcodeItem : Event
+        data object OnDismissBarcodeItem : Event
 
         data class ToggleGroupExpansion(val foodGroup: FoodGroup) : Event
     }
 
     sealed interface SideEffect {
         data class ShowSnackbar(val message: UiText) : SideEffect
-
-        // Seçilen ID'leri tarif ekranına aktarmak için string formatında (örn: "1,4,7")
         data class NavigateToRecipesWithFilters(val selectedIds: String) : SideEffect
-
         data object NavigateToAddInventory : SideEffect
+        data object NavigateToReceiptScan : SideEffect
     }
 }

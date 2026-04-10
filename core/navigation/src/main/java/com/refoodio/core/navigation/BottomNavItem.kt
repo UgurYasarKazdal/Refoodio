@@ -43,7 +43,6 @@ sealed class BottomNavItem<T : Any>(
 val bottomNavItems = listOf(
     BottomNavItem.Home,
     BottomNavItem.Inventory,
-    BottomNavItem.AddItem,
     BottomNavItem.Recipe,
     BottomNavItem.Settings
 )

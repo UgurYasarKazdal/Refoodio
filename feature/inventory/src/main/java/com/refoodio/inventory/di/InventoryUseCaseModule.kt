@@ -55,4 +55,15 @@ object InventoryUseCaseModule {
     fun provideScanReceiptUseCase(
         receiptRepository: ReceiptRepository
     ): ScanReceiptUseCase = ScanReceiptUseCase(receiptRepository)
+
+    @Provides
+    fun provideGetFoodByBarcodeUseCase(
+        foodRepository: FoodRepository
+    ): GetFoodByBarcodeUseCase = GetFoodByBarcodeUseCase(foodRepository)
+
+    @Provides
+    fun provideInsertInventoryUseCase(
+        inventoryRepository: InventoryRepository,
+        validateInventory: ValidateInventoryUseCase
+    ): InsertInventoryUseCase = InsertInventoryUseCase(inventoryRepository, validateInventory)
 }

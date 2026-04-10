@@ -17,9 +17,10 @@ internal class InventoryNavImpl @Inject constructor() : FeatureNavEntry {
         navGraphBuilder.composable<NavigationRoutes.InventoryRoute> {
             InventoryScreen(
                 onNavigateToAddInventory = {
-                    if (navController.currentDestination?.route != NavigationRoutes.InventoryAddRoute::class.qualifiedName) {
-                        navController.navigateAsBottomNav(NavigationRoutes.InventoryAddRoute)
-                    }
+                    navController.navigate(NavigationRoutes.InventoryAddRoute)
+                },
+                onNavigateToReceiptScan = {
+                    navController.navigate(NavigationRoutes.ReceiptScanRoute)
                 },
                 onNavigateToRecipes = { ids ->
                     navController.navigateAsBottomNav(NavigationRoutes.RecipeRoute(selectedIds = ids))
@@ -28,10 +29,7 @@ internal class InventoryNavImpl @Inject constructor() : FeatureNavEntry {
         }
         navGraphBuilder.composable<NavigationRoutes.InventoryAddRoute> {
             AddInventoryScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToReceiptScan = {
-                    navController.navigate(NavigationRoutes.ReceiptScanRoute)
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         navGraphBuilder.composable<NavigationRoutes.ReceiptScanRoute> {
