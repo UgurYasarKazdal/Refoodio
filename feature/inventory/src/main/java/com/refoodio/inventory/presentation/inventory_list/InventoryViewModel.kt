@@ -127,6 +127,18 @@ class InventoryViewModel @Inject constructor(
                 }
             }
 
+            is InventoryListContract.Event.OnScannedItemNameChanged ->
+                _state.update { it.copy(scannedItem = it.scannedItem?.copy(name = event.name)) }
+
+            is InventoryListContract.Event.OnScannedItemQuantityChanged ->
+                _state.update { it.copy(scannedItem = it.scannedItem?.copy(quantity = event.quantity)) }
+
+            is InventoryListContract.Event.OnScannedItemUnitChanged ->
+                _state.update { it.copy(scannedItem = it.scannedItem?.copy(unit = event.unit)) }
+
+            is InventoryListContract.Event.OnScannedItemCategoryChanged ->
+                _state.update { it.copy(scannedItem = it.scannedItem?.copy(category = event.category)) }
+
             is InventoryListContract.Event.OnConfirmBarcodeItem -> {
                 val item = _state.value.scannedItem ?: return
                 _state.update { it.copy(scannedItem = null) }

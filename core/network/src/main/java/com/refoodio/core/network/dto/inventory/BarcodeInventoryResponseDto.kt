@@ -1,10 +1,12 @@
 package com.refoodio.core.network.dto.inventory
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class BarcodeInventoryResponseDto(
-    val status: Int, val barcodeInventory: BarcodeInventoryDto? = null
+    val status: Int,
+    @SerialName("product") val barcodeInventory: BarcodeInventoryDto? = null
 )
 
 @Serializable

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,8 +27,17 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +48,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.input.KeyboardType
+import com.refoodio.core.domain.model.inventory.FoodUnit
+import com.refoodio.core.domain.model.recipe.FoodCategory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -126,22 +139,17 @@ fun InventoryScreen(
         }
     }
 
-    // Barkod ürün onay dialogu
-    state.scannedItem?.let { item ->
-        AlertDialog(
-            onDismissRequest = { viewModel.handleEvent(InventoryListContract.Event.OnDismissBarcodeItem) },
-            title = { Text("Ürün Bulundu") },
-            text = { Text("\"${item.name}\" envanterine eklensin mi?") },
-            confirmButton = {
-                TextButton(onClick = { viewModel.handleEvent(InventoryListContract.Event.OnConfirmBarcodeItem) }) {
-                    Text("Ekle")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.handleEvent(InventoryListContract.Event.OnDismissBarcodeItem) }) {
-                    Text("İptal")
-                }
-            }
+    // Barkod ürün düzenleme bottom sheet
+    val scannedItem = state.scannedItem
+    if (scannedItem != null) {
+        BarcodeResultBottomSheet(
+            item = scannedItem,
+            onNameChanged = { viewModel.handleEvent(InventoryListContract.Event.OnScannedItemNameChanged(it)) },
+            onQuantityChanged = { viewModel.handleEvent(InventoryListContract.Event.OnScannedItemQuantityChanged(it)) },
+            onUnitChanged = { viewModel.handleEvent(InventoryListContract.Event.OnScannedItemUnitChanged(it)) },
+            onCategoryChanged = { viewModel.handleEvent(InventoryListContract.Event.OnScannedItemCategoryChanged(it)) },
+            onConfirm = { viewModel.handleEvent(InventoryListContract.Event.OnConfirmBarcodeItem) },
+            onDismiss = { viewModel.handleEvent(InventoryListContract.Event.OnDismissBarcodeItem) }
         )
     }
 
@@ -226,6 +234,148 @@ private fun ExpandableFab(
                 contentDescription = "Ekle",
                 modifier = Modifier.rotate(rotation)
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BarcodeResultBottomSheet(
+    item: com.refoodio.core.domain.model.inventory.InventoryItem,
+    onNameChanged: (String) -> Unit,
+    onQuantityChanged: (Double) -> Unit,
+    onUnitChanged: (FoodUnit) -> Unit,
+    onCategoryChanged: (FoodCategory) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = RefoodioTheme.spacing.large)
+                .padding(bottom = RefoodioTheme.spacing.large),
+            verticalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.medium)
+        ) {
+            Text(
+                text = "Ürün Bilgileri",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+
+            HorizontalDivider()
+
+            // Ürün adı
+            OutlinedTextField(
+                value = item.name,
+                onValueChange = onNameChanged,
+                label = { Text("Ürün Adı") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Miktar + Birim
+            Row(horizontalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.small)) {
+                OutlinedTextField(
+                    value = item.quantity.toString(),
+                    onValueChange = { onQuantityChanged(it.toDoubleOrNull() ?: item.quantity) },
+                    label = { Text("Miktar") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.weight(1f)
+                )
+                BarcodeUnitDropdown(
+                    selected = item.unit,
+                    onSelected = onUnitChanged,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            // Kategori
+            BarcodeCategoryDropdown(
+                selected = item.category,
+                onSelected = onCategoryChanged,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(RefoodioTheme.spacing.small))
+
+            // Butonlar
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(RefoodioTheme.spacing.small)
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f)
+                ) { Text("İptal") }
+
+                com.refoodio.core.ui.components.RefoodioPrimaryButton(
+                    text = "Envantere Ekle",
+                    onClick = onConfirm,
+                    modifier = Modifier.weight(2f)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BarcodeUnitDropdown(
+    selected: FoodUnit,
+    onSelected: (FoodUnit) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
+        OutlinedTextField(
+            value = selected.name,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Birim") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            FoodUnit.entries.forEach { unit ->
+                DropdownMenuItem(
+                    text = { Text(unit.name) },
+                    onClick = { onSelected(unit); expanded = false }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BarcodeCategoryDropdown(
+    selected: FoodCategory,
+    onSelected: (FoodCategory) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
+        OutlinedTextField(
+            value = selected.name,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Kategori") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            FoodCategory.entries.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(category.name) },
+                    onClick = { onSelected(category); expanded = false }
+                )
+            }
         }
     }
 }

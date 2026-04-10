@@ -21,7 +21,7 @@ class FoodRepositoryImpl @Inject constructor(
                 Result.failure(Exception("Ürün bulunamadı (Status: ${response.status})"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Ürün bulunamadı"))
         }
     }
 }

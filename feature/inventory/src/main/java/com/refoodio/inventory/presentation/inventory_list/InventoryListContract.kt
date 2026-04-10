@@ -54,6 +54,10 @@ interface InventoryListContract {
         data object NavigateToReceiptScan : Event
         data object OnToggleCamera : Event
         data class OnBarcodeDetected(val barcode: String) : Event
+        data class OnScannedItemNameChanged(val name: String) : Event
+        data class OnScannedItemQuantityChanged(val quantity: Double) : Event
+        data class OnScannedItemUnitChanged(val unit: FoodUnit) : Event
+        data class OnScannedItemCategoryChanged(val category: FoodCategory) : Event
         data object OnConfirmBarcodeItem : Event
         data object OnDismissBarcodeItem : Event
 
