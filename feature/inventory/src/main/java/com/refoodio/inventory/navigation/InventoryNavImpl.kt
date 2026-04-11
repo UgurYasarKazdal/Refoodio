@@ -3,7 +3,6 @@ package com.refoodio.inventory.navigation
 import androidx.navigation.compose.composable
 import com.refoodio.core.navigation.FeatureNavEntry
 import com.refoodio.core.navigation.NavigationRoutes
-import com.refoodio.core.navigation.navigateAsBottomNav
 import com.refoodio.inventory.presentation.add_inventory.AddInventoryScreen
 import com.refoodio.inventory.presentation.inventory_list.InventoryScreen
 import com.refoodio.inventory.presentation.receipt_scan.ReceiptScanScreen
@@ -26,7 +25,18 @@ internal class InventoryNavImpl @Inject constructor() : FeatureNavEntry {
                     navController.navigate(NavigationRoutes.ReceiptScanRoute)
                 },
                 onNavigateToRecipes = { ids ->
-                    navController.navigateAsBottomNav(NavigationRoutes.RecipeRoute(selectedIds = ids))
+                    navController.navigate(NavigationRoutes.RecipeRoute(selectedIds = ids)) {
+                        // Tab davranışını koru: her zaman InventoryRoute'a kadar temizle
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        // launchSingleTop = false: selectedIds değişti, her seferinde
+                        // yeni bir RecipeRoute instance'ı oluştur
+                        launchSingleTop = false
+                        // restoreState = false: eski ViewModel'i restore etme,
+                        // yeni selectedIds'li taze bir ViewModel başlasın
+                        restoreState = false
+                    }
                 }
             )
         }

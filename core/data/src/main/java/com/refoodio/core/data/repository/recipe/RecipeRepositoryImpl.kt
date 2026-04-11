@@ -45,13 +45,23 @@ class RecipeRepositoryImpl @Inject constructor(
     }
 
     private fun buildPrompt(ingredients: List<String>, prefs: RecipePreferences): String {
+        val dietLine = if (prefs.dietOptions.isNotEmpty())
+            "Beslenme tercihleri: ${prefs.dietOptions.joinToString(", ")}." else ""
+        val styleRule = if (prefs.style == "Gourmet")
+            "Sadece en uyumlu malzemeleri seç, prezentasyona önem ver."
+        else "Tüm malzemeleri kullanmaya çalış, israfı önle."
+
         return """
-            Sen profesyonel bir mutfak şefisin. 
+            Sen profesyonel bir mutfak şefisin.
             Malzemeler: ${ingredients.joinToString(", ")}
-            Tercihler: ${prefs.method} ile, ${prefs.maxTime} dakikada, ${prefs.style} tarzında.
-            
-            Kural: ${if (prefs.style == "Gourmet") "Sadece en uyumlu olanları seç." else "Tüm malzemeleri kullanmaya çalış."}
-            Lütfen sonucu şu JSON formatında döndür: { "title": "...", "ingredientsUsed": [...], "instructions": [...], "duration": "...", "difficulty": "..." }
+            Pişirme yöntemi: ${prefs.method}
+            Maksimum süre: ${prefs.maxTime} dakika
+            Pişme derecesi: ${prefs.doneness}
+            Stil: ${prefs.style}
+            $dietLine
+            Kural: $styleRule
+            Lütfen sonucu YALNIZCA şu JSON formatında döndür, başka hiçbir şey ekleme:
+            { "title": "...", "ingredientsUsed": [...], "instructions": [...], "duration": "...", "difficulty": "..." }
         """.trimIndent()
     }
 

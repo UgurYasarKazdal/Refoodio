@@ -12,7 +12,19 @@ internal class RecipeNavImpl @Inject constructor() : FeatureNavEntry {
         navController: androidx.navigation.NavHostController
     ) {
         navGraphBuilder.composable<NavigationRoutes.RecipeRoute> {
-            RecipeWizardScreen()
+            RecipeWizardScreen(
+                onNavigateBack = {
+                    // Eğer back stack'te önceki bir destination varsa pop et,
+                    // yoksa (direkt tab ile açıldıysa) envantere git
+                    val didPop = navController.popBackStack()
+                    if (!didPop) {
+                        navController.navigate(NavigationRoutes.InventoryRoute) {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            )
         }
     }
 }

@@ -9,22 +9,28 @@ class GenerateRecipeUseCase(
     private val recipeRepository: RecipeRepository
 ) {
     suspend operator fun invoke(
-        ingredients: List<IngredientItem>, method: String, maxTime: Int, isGourmet: Boolean
+        ingredients: List<IngredientItem>,
+        method: String,
+        maxTime: Int,
+        isGourmet: Boolean,
+        doneness: String = "Normal",
+        dietOptions: List<String> = emptyList()
     ): Result<Recipe> {
 
-        // Temel doğrulama: Malzeme yoksa API'ye gitmeye gerek yok.
         if (ingredients.isEmpty()) {
             return Result.failure(Exception("Seçili malzeme bulunamadı."))
         }
 
-        // Seçilen malzemeleri Gemini'nin işleyebileceği basit bir listeye mapliyoruz
         val ingredientNames = ingredients.map { it.name }
 
         return recipeRepository.getRecipe(
-            ingredients = ingredientNames, preferences = RecipePreferences(
+            ingredients = ingredientNames,
+            preferences = RecipePreferences(
                 method = method,
                 maxTime = maxTime,
-                style = if (isGourmet) "Gourmet" else "Waste-Fighter"
+                style = if (isGourmet) "Gourmet" else "Waste-Fighter",
+                doneness = doneness,
+                dietOptions = dietOptions
             )
         )
     }
