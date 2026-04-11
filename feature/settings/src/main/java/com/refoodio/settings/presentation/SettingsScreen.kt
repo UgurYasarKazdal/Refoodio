@@ -63,6 +63,8 @@ import java.io.File
 
 private val cookingMethods =
     listOf("Tencere", "Fırın", "Airfryer", "Izgara", "Tavada", "Buharda", "Barbekü")
+private val timeOptions = listOf(15, 30, 45, 60, 90)
+private val donenessOptions = listOf("Az Pişmiş", "Normal", "İyice Pişmiş")
 private val dietOptions = listOf(
     "Düşük Kalori", "Yüksek Protein", "Düşük Karbonhidrat", "Vejetaryen", "Vegan", "Glutensiz"
 )
@@ -211,6 +213,48 @@ fun SettingsScreen(
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                     selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+                    }
+
+                    HorizontalDivider()
+
+                    // Maksimum süre
+                    PreferenceLabel("Varsayılan Maksimum Süre")
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        timeOptions.forEach { time ->
+                            FilterChip(
+                                selected = uiState.defaultMaxTime == time,
+                                onClick = { viewModel.setDefaultMaxTime(time) },
+                                label = { Text("$time dk") },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+                    }
+
+                    HorizontalDivider()
+
+                    // Pişme derecesi
+                    PreferenceLabel("Varsayılan Pişme Derecesi")
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        donenessOptions.forEach { option ->
+                            FilterChip(
+                                selected = uiState.defaultDoneness == option,
+                                onClick = { viewModel.setDefaultDoneness(option) },
+                                label = { Text(option) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             )
                         }

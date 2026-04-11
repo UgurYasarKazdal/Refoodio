@@ -28,6 +28,8 @@ class UserPreferencesDataSource @Inject constructor(
         val NOTIFY_DAYS_BEFORE = intPreferencesKey("notify_days_before")
         val WEEKLY_SUMMARY = booleanPreferencesKey("weekly_summary")
         val DEFAULT_COOKING_METHOD = stringPreferencesKey("default_cooking_method")
+        val DEFAULT_MAX_TIME = intPreferencesKey("default_max_time")
+        val DEFAULT_DONENESS = stringPreferencesKey("default_doneness")
         val DEFAULT_DIET_OPTIONS = stringPreferencesKey("default_diet_options")
         val DEFAULT_GOURMET_MODE = booleanPreferencesKey("default_gourmet_mode")
     }
@@ -59,6 +61,8 @@ class UserPreferencesDataSource @Inject constructor(
             notifyDaysBefore = prefs[Keys.NOTIFY_DAYS_BEFORE] ?: 3,
             weeklySummaryEnabled = prefs[Keys.WEEKLY_SUMMARY] ?: false,
             defaultCookingMethod = prefs[Keys.DEFAULT_COOKING_METHOD] ?: "Tencere",
+            defaultMaxTime = prefs[Keys.DEFAULT_MAX_TIME] ?: 30,
+            defaultDoneness = prefs[Keys.DEFAULT_DONENESS] ?: "Normal",
             defaultDietOptions = prefs[Keys.DEFAULT_DIET_OPTIONS]
                 ?.split(",")
                 ?.filter { it.isNotBlank() }
@@ -75,6 +79,8 @@ class UserPreferencesDataSource @Inject constructor(
             prefs[Keys.NOTIFY_DAYS_BEFORE] = settings.notifyDaysBefore
             prefs[Keys.WEEKLY_SUMMARY] = settings.weeklySummaryEnabled
             prefs[Keys.DEFAULT_COOKING_METHOD] = settings.defaultCookingMethod
+            prefs[Keys.DEFAULT_MAX_TIME] = settings.defaultMaxTime
+            prefs[Keys.DEFAULT_DONENESS] = settings.defaultDoneness
             prefs[Keys.DEFAULT_DIET_OPTIONS] = settings.defaultDietOptions.joinToString(",")
             prefs[Keys.DEFAULT_GOURMET_MODE] = settings.defaultGourmetMode
         }

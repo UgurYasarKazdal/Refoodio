@@ -10,6 +10,8 @@ data class SettingsUiState(
     val notifyDaysBefore: Int = 3,
     val weeklySummaryEnabled: Boolean = false,
     val defaultCookingMethod: String = "Tencere",
+    val defaultMaxTime: Int = 30,
+    val defaultDoneness: String = "Normal",
     val defaultDietOptions: Set<String> = emptySet(),
     val defaultGourmetMode: Boolean = false,
 
@@ -26,6 +28,8 @@ data class SettingsUiState(
         notifyDaysBefore = notifyDaysBefore,
         weeklySummaryEnabled = weeklySummaryEnabled,
         defaultCookingMethod = defaultCookingMethod,
+        defaultMaxTime = defaultMaxTime,
+        defaultDoneness = defaultDoneness,
         defaultDietOptions = defaultDietOptions,
         defaultGourmetMode = defaultGourmetMode
     )

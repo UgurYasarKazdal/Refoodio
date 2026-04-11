@@ -32,6 +32,8 @@ class SettingsViewModel @Inject constructor(
                         notifyDaysBefore = settings.notifyDaysBefore,
                         weeklySummaryEnabled = settings.weeklySummaryEnabled,
                         defaultCookingMethod = settings.defaultCookingMethod,
+                        defaultMaxTime = settings.defaultMaxTime,
+                        defaultDoneness = settings.defaultDoneness,
                         defaultDietOptions = settings.defaultDietOptions,
                         defaultGourmetMode = settings.defaultGourmetMode
                     )
@@ -64,6 +66,14 @@ class SettingsViewModel @Inject constructor(
 
     fun setDefaultCookingMethod(method: String) {
         updateAndSave { it.copy(defaultCookingMethod = method) }
+    }
+
+    fun setDefaultMaxTime(minutes: Int) {
+        updateAndSave { it.copy(defaultMaxTime = minutes) }
+    }
+
+    fun setDefaultDoneness(doneness: String) {
+        updateAndSave { it.copy(defaultDoneness = doneness) }
     }
 
     fun toggleDefaultDiet(option: String) {
