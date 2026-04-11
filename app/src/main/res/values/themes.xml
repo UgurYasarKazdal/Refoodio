@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Refoodio" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Uygulamanın temel teması (Compose RefoodioTheme bunu override eder) -->
+    <style name="Theme.Refoodio" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/brand_green</item>
+    </style>
+
+    <!--
+        Splash ekran teması.
+        MainActivity bu temayı kullanır; Compose devralınca postSplashScreenTheme devreye girer.
+    -->
+    <style name="Theme.Refoodio.Splash" parent="Theme.SplashScreen">
+        <!-- Tam ekran arka plan rengi -->
+        <item name="windowSplashScreenBackground">@color/brand_green</item>
+        <!-- Merkezdeki ikon (288dp vektör) -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_screen</item>
+        <!-- Android 12+ ikonun arkasındaki daire rengi — arka planla aynı, seamless görünüm -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/brand_green</item>
+        <!-- Splash bittikten sonra geçilecek tema -->
+        <item name="postSplashScreenTheme">@style/Theme.Refoodio</item>
+    </style>
+
 </resources>

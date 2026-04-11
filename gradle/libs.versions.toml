@@ -34,6 +34,7 @@ espressoCore = "3.7.0"
 mockk = "1.14.9"
 appcompat = "1.7.1"
 material = "1.13.0"
+splashscreen = "1.0.1"
 
 [libraries]
 # Core
@@ -87,6 +88,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Splash screen ikonu — viewport: 288×288
+    Safe zone: 48–240 (Android 12 splash circle: 192dp daire içinde)
+    Launcher foreground'un 2.667× büyütülmüş versiyonu.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M88,117 L88,71 A6.5,6.5 0 0 0 101,71 L101,117 Z
+            M115,117 L115,71 A6.5,6.5 0 0 0 128,71 L128,117 Z
+            M141,117 L141,71 A6.5,6.5 0 0 0 155,71 L155,117 Z
+            M88,117 L155,117 L139,133 L104,133 Z
+            M104,133 L139,133 L139,213 A17.5,13 0 0 1 104,213 Z
+            M197,64 C216,75 221,101 197,139 C173,101 179,75 197,64 Z
+        " />
+
+</vector>

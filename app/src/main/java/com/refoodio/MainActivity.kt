@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
@@ -25,6 +26,7 @@ class MainActivity : ComponentActivity() {
     lateinit var navEntries: Set<@JvmSuppressWildcards FeatureNavEntry>
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()   // setContent'ten ÖNCE çağrılmalı
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
