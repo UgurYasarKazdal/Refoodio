@@ -1,6 +1,7 @@
 package com.refoodio.recipe.navigation
 
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.refoodio.core.navigation.FeatureNavEntry
 import com.refoodio.core.navigation.NavigationRoutes
 import com.refoodio.recipe.presentation.RecipeWizardScreen
@@ -11,19 +12,14 @@ internal class RecipeNavImpl @Inject constructor() : FeatureNavEntry {
         navGraphBuilder: androidx.navigation.NavGraphBuilder,
         navController: androidx.navigation.NavHostController
     ) {
-        navGraphBuilder.composable<NavigationRoutes.RecipeRoute> {
+        navGraphBuilder.composable<NavigationRoutes.RecipeRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<NavigationRoutes.RecipeRoute>()
+            // selectedIds varsa → envantardan gelindi, geri oku göster
+            val fromInventory = !route.selectedIds.isNullOrBlank()
+
             RecipeWizardScreen(
-                onNavigateBack = {
-                    // Eğer back stack'te önceki bir destination varsa pop et,
-                    // yoksa (direkt tab ile açıldıysa) envantere git
-                    val didPop = navController.popBackStack()
-                    if (!didPop) {
-                        navController.navigate(NavigationRoutes.InventoryRoute) {
-                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
-                }
+                showBackButton = fromInventory,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

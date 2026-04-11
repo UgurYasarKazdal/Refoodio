@@ -71,6 +71,7 @@ import com.refoodio.recipe.presentation.components.cookingMethods
 @Composable
 fun RecipeWizardScreen(
     viewModel: RecipeViewModel = hiltViewModel(),
+    showBackButton: Boolean = false,
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -87,41 +88,51 @@ fun RecipeWizardScreen(
         ) {
             if (recipe != null) {
                 Column(modifier = Modifier.fillMaxWidth()) {
+                    // Başlık + kapat
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 4.dp, bottom = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Tarif",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { viewModel.dismissRecipeSheet() }) {
+                            Icon(Icons.Default.Close, contentDescription = "Kapat")
+                        }
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
                     // Scroll olan tarif içeriği
                     Column(
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 16.dp)
-                            .padding(top = 8.dp, bottom = 16.dp)
+                            .padding(top = 12.dp, bottom = 16.dp)
                     ) {
                         RecipeResultCard(recipe = recipe)
                     }
 
-                    // Sabit butonlar — her zaman altta görünür
+                    // Sabit buton — altta
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Row(
+                    Button(
+                        onClick = {
+                            viewModel.dismissRecipeSheet()
+                            viewModel.generateRecipe()
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 12.dp)
-                            .navigationBarsPadding(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .navigationBarsPadding()
                     ) {
-                        TextButton(
-                            onClick = { viewModel.dismissRecipeSheet() },
-                            modifier = Modifier.weight(1f)
-                        ) { Text("Kapat") }
-                        Button(
-                            onClick = {
-                                viewModel.dismissRecipeSheet()
-                                viewModel.generateRecipe()
-                            },
-                            modifier = Modifier.weight(2f)
-                        ) {
-                            Icon(Icons.Default.AutoAwesome, null, Modifier.size(18.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("Başka Tarif")
-                        }
+                        Icon(Icons.Default.AutoAwesome, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Başka Tarif Oluştur")
                     }
                 }
             }
@@ -134,6 +145,25 @@ fun RecipeWizardScreen(
             onDismissRequest = { showPreferencesSheet = false },
             sheetState = prefsSheetState
         ) {
+            // Başlık + kapat
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 4.dp, bottom = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Tarif Tercihleri",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = { showPreferencesSheet = false }) {
+                    Icon(Icons.Default.Close, contentDescription = "Kapat")
+                }
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -160,8 +190,10 @@ fun RecipeWizardScreen(
             TopAppBar(
                 title = { Text("Tarif Sihirbazı", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    if (showBackButton) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                        }
                     }
                 },
                 actions = {
