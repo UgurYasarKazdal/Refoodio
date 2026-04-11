@@ -49,10 +49,14 @@ class RecipeRepositoryImpl @Inject constructor(
             "Beslenme tercihleri: ${prefs.dietOptions.joinToString(", ")}." else ""
         val styleRule = if (prefs.style == "Gourmet")
             "Sadece en uyumlu malzemeleri seç, prezentasyona önem ver."
-        else "Tüm malzemeleri kullanmaya çalış, israfı önle."
+        else "Tüm malzemeleri kullanmaya çalış, israfı önle, ama malzemeler birbirine uyumlu değilse uyumlu olmayan(ları) eleyebilirsin."
 
+        val role = if (prefs.style == "Gourmet")
+            "Sen profesyonel bir mutfak şefisin."
+        else
+            "Sen mutfakta yemek yapan birisin."
         return """
-            Sen profesyonel bir mutfak şefisin.
+            $role
             Malzemeler: ${ingredients.joinToString(", ")}
             Pişirme yöntemi: ${prefs.method}
             Maksimum süre: ${prefs.maxTime} dakika
