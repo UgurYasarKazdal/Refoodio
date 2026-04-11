@@ -25,7 +25,10 @@ interface InventoryAddContract {
         val quantity: Double = 1.0,
         val storageNote: String = "",
         val unit: FoodUnit = FoodUnit.KILOGRAM,
-        val category: FoodCategory = FoodCategory.OTHER //TODO:Kategori seçmesi için dropdown koyulacak
+        val category: FoodCategory = FoodCategory.OTHER, //TODO:Kategori seçmesi için dropdown koyulacak
+        // Paket içeriği — sadece unit==PACK ve kullanıcı doldurursa aktif
+        val packageContent: Double? = null,
+        val packageContentUnit: FoodUnit = FoodUnit.PIECE
     )
 
     sealed interface Event {
@@ -40,6 +43,8 @@ interface InventoryAddContract {
         data object OnSaveInventory : Event
         data class OnUnitSelected(val unit: FoodUnit) : Event
         data class OnQuantitySelected(val unit: Double) : Event
+        data class OnPackageContentChanged(val content: Double?) : Event
+        data class OnPackageContentUnitSelected(val unit: FoodUnit) : Event
 
         // Kamera ve İzin Olayları
         data object OnToggleCamera : Event

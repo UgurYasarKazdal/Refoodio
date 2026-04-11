@@ -207,18 +207,18 @@ fun AddInventoryScreen(
                     onDecrement = { viewModel.handleEvent(InventoryAddContract.Event.OnDecrementQuantity) },
                     selectedUnit = state.form.unit,
                     onUnitSelected = {
-                        viewModel.handleEvent(
-                            InventoryAddContract.Event.OnUnitSelected(
-                                it
-                            )
-                        )
+                        viewModel.handleEvent(InventoryAddContract.Event.OnUnitSelected(it))
                     },
                     onQuantitySelected = {
-                        viewModel.handleEvent(
-                            InventoryAddContract.Event.OnQuantitySelected(
-                                it
-                            )
-                        )
+                        viewModel.handleEvent(InventoryAddContract.Event.OnQuantitySelected(it))
+                    },
+                    packageContent = state.form.packageContent,
+                    packageContentUnit = state.form.packageContentUnit,
+                    onPackageContentChanged = {
+                        viewModel.handleEvent(InventoryAddContract.Event.OnPackageContentChanged(it))
+                    },
+                    onPackageContentUnitSelected = {
+                        viewModel.handleEvent(InventoryAddContract.Event.OnPackageContentUnitSelected(it))
                     },
                 )
                 ExpiryDateSection(

@@ -146,6 +146,14 @@ class InventoryAddViewModel @Inject constructor(
                 updateForm { form -> form.copy(quantity = event.unit) }
             }
 
+            is InventoryAddContract.Event.OnPackageContentChanged -> {
+                updateForm { form -> form.copy(packageContent = event.content) }
+            }
+
+            is InventoryAddContract.Event.OnPackageContentUnitSelected -> {
+                updateForm { form -> form.copy(packageContentUnit = event.unit) }
+            }
+
             is InventoryAddContract.Event.OnBarcodeScanned -> {
                 searchInventoryByBarcode(event.barcode)
             }
@@ -195,12 +203,22 @@ class InventoryAddViewModel @Inject constructor(
         if (currentState.isLoading) return
         if (currentState.form.selectedFoodName.isBlank()) return
 
+        val (finalQuantity, finalUnit) = if (
+            currentState.form.unit == com.refoodio.core.domain.model.inventory.FoodUnit.PACK &&
+            currentState.form.packageContent != null &&
+            currentState.form.packageContent > 0.0
+        ) {
+            currentState.form.packageContent to currentState.form.packageContentUnit
+        } else {
+            currentState.form.quantity to currentState.form.unit
+        }
+
         val item = InventoryItem(
             id = if (currentState.isEditMode) currentState.editItemId else 0,
             name = currentState.form.selectedFoodName,
             expiryDate = currentState.form.expiryDate ?: System.currentTimeMillis(),
-            quantity = currentState.form.quantity.toDouble(),
-            unit = currentState.form.unit,
+            quantity = finalQuantity,
+            unit = finalUnit,
             category = currentState.form.category,
         )
 

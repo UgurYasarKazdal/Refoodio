@@ -102,30 +102,61 @@ class ReceiptRepositoryImpl @Inject constructor(
     }
 
     private fun buildReceiptPrompt(): String = """
-        Bu bir market fişi fotoğrafıdır. Fişteki tüm ürünleri analiz et.
+        Bu bir market fişi fotoğrafıdır. Fişteki tüm gıda ürünlerini analiz et.
         Her ürün için aşağıdaki JSON formatında bir liste döndür.
         Sadece JSON döndür, başka hiçbir şey ekleme.
 
         Format:
         [
           {
-            "name": "Ürün adı (Türkçe, kısa ve anlaşılır)",
-            "quantity": <sayısal miktar, double>,
-            "unit": "<GRAM|KILOGRAM|LITER|MILLILITER|PIECE|BUNCH|PACK|CUP|TABLESPOON|TEASPOON>",
+            "name": "Ürün adı (Türkçe, kısa ve anlaşılır — paket/kutu/şişe gibi ambalaj ifadelerini isme ekleme)",
+            "quantity": <sayısal miktar, double — aşağıdaki miktar kurallarına göre belirle>,
+            "unit": "<GRAM|KILOGRAM|LITER|MILLILITER|PIECE|BUNCH|PACK>",
             "category": "<DAIRY|VEGETABLE|FRUIT|MEAT_POULTRY|SEAFOOD|DELI|STAPLE_FOOD|GRAINS|LEGUMES|BAKERY|PASTRY|OIL|SAUCE|VINEGAR|SPICE|SEEDS|BREAKFAST|BEVERAGE|CANNED|NUTS|FERMENTED|SWEETENER|OTHER>",
             "shelfLifeDays": <tahmini raf ömrü gün cinsinden, integer>,
-            "price": <ürünün fiyatı TL cinsinden, double, fişte yoksa null>,
-            "storeName": "<fişin üstündeki market/mağaza adı, tüm ürünler için aynı değer, okunamazsa null>"
+            "price": <ürünün satır fiyatı TL cinsinden, double, fişte yoksa null>,
+            "storeName": "<fişin üstündeki market adı, tüm ürünler için aynı, okunamazsa null>"
           }
         ]
 
-        Kurallar:
-        - Miktarı fişten oku, yazılmamışsa 1 kullan.
-        - Birimi ürün tipine göre tahmin et (örn: süt → LITER, ekmek → PIECE).
+        MİKTAR VE BİRİM KURALLARI — ÇOK ÖNEMLİ:
+        Hedef: Kullanıcının mutfakta düşündüğü birimde kaydet, satın alma biriminde değil.
+
+        1. Ürün adında ADET/KAÇ'LI bilgisi varsa → PIECE kullan, adedi quantity yap:
+           - "20'li Yumurta"      → quantity: 20,   unit: PIECE
+           - "6'lı Yoğurt"        → quantity: 6,    unit: PIECE
+           - "12'li Meyve Suyu"   → quantity: 12,   unit: PIECE
+           - "30'lu Yumurta"      → quantity: 30,   unit: PIECE
+
+        2. Ürün adında veya fişte AĞIRLIK bilgisi varsa → GRAM veya KILOGRAM kullan:
+           - "500g Tuz"            → quantity: 500,  unit: GRAM
+           - "1 kg Un"             → quantity: 1,    unit: KILOGRAM
+           - "250g Tereyağı"       → quantity: 250,  unit: GRAM
+           - "3 kg Kıyma"          → quantity: 3,    unit: KILOGRAM
+           - "Makarna 500g"        → quantity: 500,  unit: GRAM
+
+        3. Ürün adında veya fişte HACİM bilgisi varsa → LITER veya MILLILITER kullan:
+           - "1L Süt"              → quantity: 1,    unit: LITER
+           - "500ml Ayran"         → quantity: 500,  unit: MILLILITER
+           - "5L Zeytinyağı"       → quantity: 5,    unit: LITER
+           - "330ml Kola"          → quantity: 330,  unit: MILLILITER
+
+        4. Doğal olarak tek tek sayılan gıdalar → PIECE:
+           - Ekmek, simit, baget, pide → quantity: 1, unit: PIECE
+           - Domates, biber, patlıcan (adet satılanlar) → PIECE
+
+        5. Tartı ile satılan sebze/meyve → KILOGRAM veya GRAM:
+           - "Domates 1.250 kg"    → quantity: 1.25, unit: KILOGRAM
+           - "Muz 800g"            → quantity: 800,  unit: GRAM
+
+        6. Hiçbir miktar bilgisi çıkarılamıyorsa → PACK kullan, quantity: 1
+
+        DİĞER KURALLAR:
+        - Ürün adını kısa tut. "20'li", "500g", "1L" gibi miktar ifadelerini isme ekleme, zaten quantity/unit alanlarına giriyor.
         - Kategoriyi ürün adından belirle.
-        - shelfLifeDays için tipik raf ömrünü kullan (süt: 7, ekmek: 3, makarna: 365 gibi).
-        - price alanına ürünün satır fiyatını yaz (KDV dahil toplam satır tutarı). Fişte fiyat yoksa null yaz.
-        - storeName alanına fişin en üstündeki market adını yaz (örn: "Migros", "A101", "BİM", "CarrefourSA"). Tüm ürünler için aynı değer olacak. Okunamazsa null yaz.
-        - Fiş kodu, indirim kalemi, poşet ücreti gibi yiyecek olmayan kalemleri listeye ekleme.
+        - shelfLifeDays: süt→7, yumurta→21, ekmek→3, makarna→365, kıyma→2, sebze→7, meyve→7
+        - price: satır fiyatını yaz (KDV dahil). Yoksa null.
+        - storeName: fişin tepesindeki market adı. Tüm ürünler için aynı. Okunamazsa null.
+        - Fiş kodu, indirim, poşet ücreti, KDV satırı gibi gıda olmayan kalemleri ekleme.
     """.trimIndent()
 }
