@@ -28,4 +28,10 @@ interface InventoryDao {
 
     @Query("DELETE FROM inventory WHERE id IN (:idList)")
     suspend fun deleteItemsByIds(idList: List<Int>)
+
+    @Query("DELETE FROM inventory")
+    suspend fun deleteAllInventory()
+
+    @Query("SELECT * FROM inventory")
+    suspend fun getAllInventoriesOnce(): List<InventoryEntity>
 }
