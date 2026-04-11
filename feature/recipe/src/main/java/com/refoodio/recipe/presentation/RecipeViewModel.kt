@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,12 +38,22 @@ class RecipeViewModel @Inject constructor(
     }
 
     init {
-        loadIngredients()
+        viewModelScope.launch {
+            // Önce ayarları yükle (tek seferlik), sonra ingredient akışını başlat
+            val settings = recipeUseCases.getSettingsUseCase().first()
+            _uiState.update {
+                it.copy(
+                    selectedCookingMethod = settings.defaultCookingMethod,
+                    selectedDietOptions = settings.defaultDietOptions,
+                    isGourmetMode = settings.defaultGourmetMode
+                )
+            }
+            loadIngredients()
+        }
     }
 
-    private fun loadIngredients() {
-        viewModelScope.launch {
-            recipeUseCases.getInventoriesUseCase().collect { resource ->
+    private suspend fun loadIngredients() {
+        recipeUseCases.getInventoriesUseCase().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
                         val items = resource.data.map { domainModel ->
@@ -65,7 +76,6 @@ class RecipeViewModel @Inject constructor(
                         it.copy(isLoading = false, errorMessage = resource.message)
                     }
                 }
-            }
         }
     }
 

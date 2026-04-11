@@ -48,6 +48,8 @@ dependencies {
     // UI ve Lifecycle (MainActivity için şart)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
 
@@ -62,6 +64,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Modüller
+    implementation(project(":core:domain")) // MainViewModel için SettingsRepository
     implementation(project(":core:navigation"))
     implementation(project(":core:ui"))
     implementation(project(":core:data")) // DI graph'ı tamamlamak için
