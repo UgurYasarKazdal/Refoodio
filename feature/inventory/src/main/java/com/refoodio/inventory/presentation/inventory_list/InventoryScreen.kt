@@ -83,6 +83,7 @@ import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.components.InventoryContent
 import com.refoodio.inventory.presentation.inventory_list.components.RecipeWizardBar
+import com.refoodio.inventory.presentation.inventory_list.components.SelectionBasketSheet
 import kotlinx.coroutines.launch
 
 @Composable
@@ -98,6 +99,7 @@ fun InventoryScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var isFabExpanded by remember { mutableStateOf(false) }
+    var showBasketSheet by remember { mutableStateOf(false) }
 
     val selectedCount by remember(state.selectedIds) {
         derivedStateOf { state.selectedIds.size }
@@ -223,12 +225,46 @@ fun InventoryScreen(
 
                 RecipeWizardBar(
                     selectedCount = selectedCount,
-                    onFindRecipesClick = { viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick) },
+                    onOpenBasket = { showBasketSheet = true },
                     onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
-                    onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete) },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
+        }
+
+        // Seçim sepeti sheet
+        if (showBasketSheet && state.selectedIds.isNotEmpty()) {
+            val selectedItems = state.sectionedItems.values.flatten()
+                .filter { state.selectedIds.contains(it.id) }
+
+            SelectionBasketSheet(
+                selectedItems = selectedItems,
+                onDismiss = { showBasketSheet = false },
+                onDelete = {
+                    showBasketSheet = false
+                    viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete)
+                },
+                onFindRecipes = {
+                    showBasketSheet = false
+                    viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick)
+                },
+                onBulkConsume = { amounts ->
+                    showBasketSheet = false
+                    viewModel.handleEvent(InventoryListContract.Event.OnBulkConsume(amounts))
+                },
+                onDeleteItem = { id ->
+                    viewModel.handleEvent(InventoryListContract.Event.OnDeleteSingleItem(id))
+                    // Seçimden de otomatik çıkar
+                    viewModel.handleEvent(InventoryListContract.Event.OnToggleSelect(id))
+                },
+                onDeselectItem = { id ->
+                    // Envanterden silmeden sadece seçimden çıkar
+                    viewModel.handleEvent(InventoryListContract.Event.OnToggleSelect(id))
+                },
+                onEditItem = { id ->
+                    viewModel.handleEvent(InventoryListContract.Event.OnEditItem(id))
+                }
+            )
         }
 
         // Tüketim dialogu

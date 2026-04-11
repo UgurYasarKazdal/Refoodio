@@ -76,6 +76,7 @@ interface InventoryListContract {
         data class OnConsumeClick(val id: Int) : Event
         data class OnConsumeConfirm(val amount: Double) : Event
         data object OnConsumeDismiss : Event
+        data class OnBulkConsume(val amounts: Map<Int, Double>) : Event
     }
 
     sealed interface SideEffect {

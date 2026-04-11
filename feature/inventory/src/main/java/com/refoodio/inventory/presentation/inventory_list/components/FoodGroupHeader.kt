@@ -20,15 +20,20 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.refoodio.core.domain.model.inventory.FoodGroup
 
 @Composable
-fun FoodGroupHeader(foodGroup: FoodGroup, itemCount: Int, isExpanded: Boolean, onHeaderClick: () -> Unit) {
-    // Okun dönme animasyonu
-    val rotationState by animateFloatAsState(
+fun FoodGroupHeader(
+    foodGroup: FoodGroup,
+    itemCount: Int,
+    isExpanded: Boolean,
+    onHeaderClick: () -> Unit
+) {
+    val arrowRotation by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
-        label = "rotation"
+        label = "arrow_rotation"
     )
 
     Surface(
@@ -39,35 +44,34 @@ fun FoodGroupHeader(foodGroup: FoodGroup, itemCount: Int, isExpanded: Boolean, o
         tonalElevation = 2.dp
     ) {
         Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(id = foodGroup.iconResId),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(20.dp),
                 tint = Color.Unspecified
             )
             Text(
                 text = stringResource(foodGroup.titleResId),
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(start = 10.dp)
                     .weight(1f),
                 style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
             Text(
                 text = "$itemCount",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.padding(end = 4.dp)
             )
-
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
-                contentDescription = null,
-                modifier = Modifier
-                    .rotate(rotationState)
-                    .padding(end = 8.dp),
+                contentDescription = if (isExpanded) "Kapat" else "Aç",
+                modifier = Modifier.rotate(arrowRotation),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

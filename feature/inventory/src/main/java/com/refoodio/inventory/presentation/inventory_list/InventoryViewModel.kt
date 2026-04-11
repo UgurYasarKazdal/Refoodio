@@ -204,12 +204,11 @@ class InventoryViewModel @Inject constructor(
             }
 
             is InventoryListContract.Event.ToggleGroupExpansion -> {
-                val newExpandedGroups = if (_state.value.expandedGroups.contains(event.foodGroup)) {
+                val newExpanded = if (_state.value.expandedGroups.contains(event.foodGroup))
                     _state.value.expandedGroups - event.foodGroup
-                } else {
+                else
                     _state.value.expandedGroups + event.foodGroup
-                }
-                _state.update { it.copy(expandedGroups = newExpandedGroups) }
+                _state.update { it.copy(expandedGroups = newExpanded) }
             }
 
             is InventoryListContract.Event.OnEditItem -> {
@@ -253,6 +252,16 @@ class InventoryViewModel @Inject constructor(
 
             is InventoryListContract.Event.OnConsumeDismiss -> {
                 _state.update { it.copy(consumeItem = null) }
+            }
+
+            is InventoryListContract.Event.OnBulkConsume -> {
+                event.amounts.filter { it.value > 0.0 }.forEach { (id, amount) ->
+                    val item = allItems.find { it.id == id } ?: return@forEach
+                    val newQty = (item.originalItem.quantity - amount).coerceAtLeast(0.0)
+                    updateInventory(item.originalItem.copy(quantity = newQty))
+                        .launchIn(viewModelScope)
+                }
+                _state.update { it.copy(selectedIds = emptySet()) }
             }
 
             else -> Unit

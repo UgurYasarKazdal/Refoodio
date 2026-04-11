@@ -4,14 +4,17 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -51,55 +54,80 @@ fun InventoryContent(
                 }
             }
         }
-    } else {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (state.criticalItems.isNotEmpty()) {
-                item(span = { GridItemSpan(2) }) {
-                    CriticalCarousel(
-                        criticalItems = state.criticalItems,
-                        selectedIds = state.selectedIds,
-                        onToggleSelect = { id ->
-                            onEvent(InventoryListContract.Event.OnToggleSelect(id))
-                        })
-                }
+        return
+    }
 
-                item(span = { GridItemSpan(2) }) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp)
+    ) {
+        // ── Kritik ürünler carousel ───────────────────────────────────────
+        if (state.criticalItems.isNotEmpty()) {
+            item {
+                CriticalCarousel(
+                    criticalItems = state.criticalItems,
+                    selectedIds = state.selectedIds,
+                    onToggleSelect = { id ->
+                        onEvent(InventoryListContract.Event.OnToggleSelect(id))
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+
+        // ── Kategoriler: sticky header + expandable ürünler ───────────────
+        state.sectionedItems.forEach { (foodGroup, items) ->
+            val isExpanded = state.expandedGroups.contains(foodGroup)
+
+            stickyHeader(key = "header_${foodGroup.name}") {
+                FoodGroupHeader(
+                    foodGroup = foodGroup,
+                    itemCount = items.size,
+                    isExpanded = isExpanded,
+                    onHeaderClick = {
+                        onEvent(InventoryListContract.Event.ToggleGroupExpansion(foodGroup))
+                    }
+                )
             }
 
-            state.sectionedItems.forEach { (foodGroup, items) ->
-                val isExpanded = state.expandedGroups.contains(foodGroup)
-                item(span = { GridItemSpan(2) }) {
-                    FoodGroupHeader(
-                        foodGroup = foodGroup,
-                        itemCount = items.size,
-                        isExpanded = isExpanded,
-                        onHeaderClick = {
-                            onEvent(InventoryListContract.Event.ToggleGroupExpansion(foodGroup))
+            if (isExpanded) {
+                val rows = items.chunked(2)
+                items(rows, key = { "${foodGroup.name}_${rows.indexOf(it)}" }) { rowItems ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Max)
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rowItems.forEach { uiModel ->
+                            Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                                InventoryItem(
+                                    item = uiModel,
+                                    isSelected = state.selectedIds.contains(uiModel.id),
+                                    onToggleSelect = {
+                                        onEvent(InventoryListContract.Event.OnToggleSelect(it))
+                                    },
+                                    onEditItem = {
+                                        onEvent(InventoryListContract.Event.OnEditItem(it))
+                                    },
+                                    onDeleteItem = {
+                                        onEvent(InventoryListContract.Event.OnDeleteSingleItem(it))
+                                    },
+                                    onConsumeItem = {
+                                        onEvent(InventoryListContract.Event.OnConsumeClick(it))
+                                    }
+                                )
+                            }
                         }
-                    )
-                }
-
-                if (isExpanded) {
-                    items(items, key = { it.id }) { uiModel ->
-                        Box(modifier = Modifier.animateItem()) {
-                            InventoryItem(
-                                item = uiModel,
-                                isSelected = state.selectedIds.contains(uiModel.id),
-                                onToggleSelect = { onEvent(InventoryListContract.Event.OnToggleSelect(it)) },
-                                onEditItem = { onEvent(InventoryListContract.Event.OnEditItem(it)) },
-                                onDeleteItem = { onEvent(InventoryListContract.Event.OnDeleteSingleItem(it)) },
-                                onConsumeItem = { onEvent(InventoryListContract.Event.OnConsumeClick(it)) }
-                            )
+                        if (rowItems.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
+                }
+
+                item(key = "spacer_${foodGroup.name}") {
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
