@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.refoodio.core.domain.model.recipe.IngredientItem
+import com.refoodio.recipe.presentation.components.CookingLoadingAnimation
 import com.refoodio.recipe.presentation.components.RecipePreferencesContent
 import com.refoodio.recipe.presentation.components.RecipeResultCard
 import com.refoodio.recipe.presentation.components.cookingMethods
@@ -285,6 +287,16 @@ fun RecipeWizardScreen(
             }
         }
     ) { padding ->
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CookingLoadingAnimation()
+            }
+        } else {
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
@@ -332,6 +344,7 @@ fun RecipeWizardScreen(
 
             item { Spacer(Modifier.height(16.dp)) }
         }
+        } // else
     }
 }
 

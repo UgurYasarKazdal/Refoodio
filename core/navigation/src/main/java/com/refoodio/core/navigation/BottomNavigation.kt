@@ -8,10 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +38,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 @Composable
 fun BottomNavigation(navController: NavHostController, navEntries: Set<FeatureNavEntry>) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         bottomBar = {
             RefoodioBottomBar(navController = navController)
         }
@@ -55,7 +55,6 @@ fun BottomNavigation(navController: NavHostController, navEntries: Set<FeatureNa
 private fun RefoodioBottomBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -65,8 +64,8 @@ private fun RefoodioBottomBar(navController: NavHostController) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp + navBarPadding)
-                .padding(bottom = navBarPadding),
+                .navigationBarsPadding()
+                .height(64.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             bottomNavItems.forEach { item ->

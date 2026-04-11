@@ -1,5 +1,8 @@
 package com.refoodio.recipe.presentation.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,11 +17,38 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SelectableChipColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+
+@Composable
+private fun BounceFilterChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    colors: SelectableChipColors = FilterChipDefaults.filterChipColors()
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "chip_bounce"
+    )
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = label,
+        colors = colors,
+        modifier = Modifier.scale(scale)
+    )
+}
 
 data class CookingMethod(val label: String, val emoji: String)
 
@@ -80,7 +110,7 @@ fun RecipePreferencesContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 cookingMethods.forEach { method ->
-                    FilterChip(
+                    BounceFilterChip(
                         selected = selectedMethod == method.label,
                         onClick = { onMethodChange(method.label) },
                         label = { Text("${method.emoji} ${method.label}") },
@@ -103,7 +133,7 @@ fun RecipePreferencesContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 timeOptions.forEach { time ->
-                    FilterChip(
+                    BounceFilterChip(
                         selected = selectedTime == time,
                         onClick = { onTimeChange(time) },
                         label = { Text("$time dk") },
@@ -126,7 +156,7 @@ fun RecipePreferencesContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 donenessOptions.forEach { option ->
-                    FilterChip(
+                    BounceFilterChip(
                         selected = selectedDoneness == option,
                         onClick = { onDonenessChange(option) },
                         label = { Text(option) },
@@ -149,7 +179,7 @@ fun RecipePreferencesContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 dietOptions.forEach { option ->
-                    FilterChip(
+                    BounceFilterChip(
                         selected = option in selectedDietOptions,
                         onClick = { onDietToggle(option) },
                         label = { Text(option) },
@@ -209,9 +239,18 @@ private fun StyleCard(
     else
         MaterialTheme.colorScheme.outlineVariant
 
+    val cardScale by animateFloatAsState(
+        targetValue = if (selected) 1.04f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "card_bounce"
+    )
+
     OutlinedCard(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.scale(cardScale),
         colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
         border = BorderStroke(
             width = if (selected) 2.dp else 1.dp,

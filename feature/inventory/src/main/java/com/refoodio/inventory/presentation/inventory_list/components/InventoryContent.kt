@@ -15,16 +15,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.refoodio.core.ui.components.EmptyStateView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -42,17 +39,13 @@ fun InventoryContent(
 
     if (state.criticalItems.isEmpty() && state.sectionedItems.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = stringResource(R.string.empty_kitchen_message),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { onEvent(InventoryListContract.Event.NavigateAddInventory) }) {
-                    Text("İlk Ürünü Ekle")
-                }
-            }
+            EmptyStateView(
+                emoji = "🧺",
+                title = "Mutfağın boş görünüyor",
+                description = "Henüz envantere ürün eklemedin.\nAlışverişten döner dönmez ürünlerini ekle,\nson kullanma tarihlerini takip et.",
+                actionLabel = "İlk Ürünü Ekle",
+                onAction = { onEvent(InventoryListContract.Event.NavigateAddInventory) }
+            )
         }
         return
     }
