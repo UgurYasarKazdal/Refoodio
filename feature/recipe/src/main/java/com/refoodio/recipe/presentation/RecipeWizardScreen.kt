@@ -77,7 +77,7 @@ fun RecipeWizardScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val recipeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val recipeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val prefsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showPreferencesSheet by remember { mutableStateOf(false) }
 

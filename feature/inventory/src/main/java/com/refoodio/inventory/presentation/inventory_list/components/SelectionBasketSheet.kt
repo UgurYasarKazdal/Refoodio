@@ -1,13 +1,9 @@
 package com.refoodio.inventory.presentation.inventory_list.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -22,12 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
@@ -36,19 +28,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,27 +49,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
-// Silme onayı için durum
-private sealed interface DeleteConfirmState {
-    data object None : DeleteConfirmState
-    data class SingleItem(val item: InventoryListContract.InventoryItemUiModel) : DeleteConfirmState
-    data object AllItems : DeleteConfirmState
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectionBasketSheet(
     selectedItems: List<InventoryListContract.InventoryItemUiModel>,
     onDismiss: () -> Unit,
-    onDelete: () -> Unit,
     onFindRecipes: () -> Unit,
     onBulkConsume: (amounts: Map<Int, Double>) -> Unit,
-    onDeleteItem: (Int) -> Unit,
-    onEditItem: (Int) -> Unit,
     onDeselectItem: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Varsayılan = ürünün mevcut miktarı
     val amounts = remember(selectedItems) {
@@ -94,15 +71,11 @@ fun SelectionBasketSheet(
     val totalConsumeAmount = amounts.values.sumOf { it }
     val canConsume = totalConsumeAmount > 0.0
 
-    var deleteConfirm by remember { mutableStateOf<DeleteConfirmState>(DeleteConfirmState.None) }
-
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         modifier = modifier
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -161,7 +134,7 @@ fun SelectionBasketSheet(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            // Ürün başlığı + işlem butonları
+                            // Ürün başlığı + tezgahtan çıkar
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -181,37 +154,6 @@ fun SelectionBasketSheet(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                                // Düzenle
-                                FilledTonalIconButton(
-                                    onClick = { onEditItem(item.id) },
-                                    modifier = Modifier.size(32.dp),
-                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                    )
-                                ) {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        contentDescription = "Düzenle",
-                                        modifier = Modifier.size(15.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(4.dp))
-                                // Envanterden sil
-                                FilledTonalIconButton(
-                                    onClick = { deleteConfirm = DeleteConfirmState.SingleItem(item) },
-                                    modifier = Modifier.size(32.dp),
-                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer
-                                    )
-                                ) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Envanterden Sil",
-                                        modifier = Modifier.size(15.dp),
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(4.dp))
                                 // Sadece seçimden çıkar
                                 FilledTonalIconButton(
                                     onClick = { onDeselectItem(item.id) },
@@ -311,151 +253,35 @@ fun SelectionBasketSheet(
             HorizontalDivider()
 
             // ── Alt aksiyon butonları ──────────────────────────────────────
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Tüket (varsayılan miktar dolduğu için hemen aktif)
+                // Tüket
                 Button(
                     onClick = { onBulkConsume(amounts.toMap()) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                     enabled = canConsume
                 ) {
                     Text("Tüket")
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Tarif Bul
+                Button(
+                    onClick = onFindRecipes,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    // Tarif Bul
-                    Button(
-                        onClick = onFindRecipes,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Tarif Bul")
-                    }
-
-                    // Tümünü Sil
-                    OutlinedButton(
-                        onClick = { deleteConfirm = DeleteConfirmState.AllItems },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                    ) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Hepsini Sil")
-                    }
+                    Icon(
+                        Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Tarif Bul")
                 }
             }
         } // Column sonu
-
-        // ── Silme onay overlay ─────────────────────────────────────────────
-        if (deleteConfirm !is DeleteConfirmState.None) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(Color.Black.copy(alpha = 0.4f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 8.dp,
-                    modifier = Modifier
-                        .padding(horizontal = 32.dp)
-                        .fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Uyarı ikonu
-                        Surface(
-                            shape = RoundedCornerShape(50),
-                            color = MaterialTheme.colorScheme.errorContainer,
-                            modifier = Modifier.size(56.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Warning,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                        }
-
-                        // Başlık
-                        Text(
-                            text = when (val s = deleteConfirm) {
-                                is DeleteConfirmState.SingleItem -> "${s.item.name} silinsin mi?"
-                                is DeleteConfirmState.AllItems   -> "${selectedItems.size} ürün silinsin mi?"
-                                else -> ""
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        )
-
-                        // Açıklama
-                        Text(
-                            text = "Bu işlem geri alınamaz. Ürün envanterinden kalıcı olarak silinecek.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Sil butonu
-                        Button(
-                            onClick = {
-                                when (val s = deleteConfirm) {
-                                    is DeleteConfirmState.SingleItem -> onDeleteItem(s.item.id)
-                                    is DeleteConfirmState.AllItems   -> onDelete()
-                                    else -> Unit
-                                }
-                                deleteConfirm = DeleteConfirmState.None
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Icon(Icons.Default.Delete, null, Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("Evet, Sil")
-                        }
-
-                        // İptal
-                        TextButton(
-                            onClick = { deleteConfirm = DeleteConfirmState.None },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Vazgeç")
-                        }
-                    }
-                }
-            }
-        } // if sonu
-
-        } // outer Box sonu
     }
 }

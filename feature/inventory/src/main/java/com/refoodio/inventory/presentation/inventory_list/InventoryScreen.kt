@@ -227,6 +227,11 @@ fun InventoryScreen(
                     selectedCount = selectedCount,
                     onOpenBasket = { showBasketSheet = true },
                     onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
+                    onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete) },
+                    onEditSingleItem = {
+                        val id = state.selectedIds.firstOrNull() ?: return@RecipeWizardBar
+                        viewModel.handleEvent(InventoryListContract.Event.OnEditItem(id))
+                    },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
@@ -240,10 +245,6 @@ fun InventoryScreen(
             SelectionBasketSheet(
                 selectedItems = selectedItems,
                 onDismiss = { showBasketSheet = false },
-                onDelete = {
-                    showBasketSheet = false
-                    viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete)
-                },
                 onFindRecipes = {
                     showBasketSheet = false
                     viewModel.handleEvent(InventoryListContract.Event.OnFindRecipesClick)
@@ -252,17 +253,8 @@ fun InventoryScreen(
                     showBasketSheet = false
                     viewModel.handleEvent(InventoryListContract.Event.OnBulkConsume(amounts))
                 },
-                onDeleteItem = { id ->
-                    viewModel.handleEvent(InventoryListContract.Event.OnDeleteSingleItem(id))
-                    // Seçimden de otomatik çıkar
-                    viewModel.handleEvent(InventoryListContract.Event.OnToggleSelect(id))
-                },
                 onDeselectItem = { id ->
-                    // Envanterden silmeden sadece seçimden çıkar
                     viewModel.handleEvent(InventoryListContract.Event.OnToggleSelect(id))
-                },
-                onEditItem = { id ->
-                    viewModel.handleEvent(InventoryListContract.Event.OnEditItem(id))
                 }
             )
         }
