@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -41,11 +42,14 @@ import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 @Composable
 fun InventoryItem(
     item: InventoryListContract.InventoryItemUiModel,
-    onToggleSelect: (Int) -> Unit,
-    onEditItem: (Int) -> Unit,
-    onDeleteItem: (Int) -> Unit,
-    onConsumeItem: (Int) -> Unit,
+    // Tezgah seçimi
     isSelected: Boolean,
+    onToggleSelect: (Int) -> Unit,
+    // Toplu silme modu
+    isInBulkDeleteMode: Boolean,
+    isDeleteSelected: Boolean,
+    onToggleDeleteSelect: (Int) -> Unit,
+    onEnterBulkDeleteMode: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val urgencyColor = when (item.urgencyLevel) {
@@ -65,10 +69,12 @@ fun InventoryItem(
     }
 
     val cardColor by animateColorAsState(
-        targetValue = if (isSelected)
-            MaterialTheme.colorScheme.primaryContainer
-        else
-            MaterialTheme.colorScheme.surface,
+        targetValue = when {
+            isInBulkDeleteMode && isDeleteSelected -> MaterialTheme.colorScheme.errorContainer
+            isInBulkDeleteMode -> MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+            isSelected -> MaterialTheme.colorScheme.primaryContainer
+            else -> MaterialTheme.colorScheme.surface
+        },
         label = "card_color"
     )
 
@@ -77,8 +83,14 @@ fun InventoryItem(
             .padding(horizontal = 4.dp, vertical = 4.dp)
             .fillMaxWidth()
             .combinedClickable(
-                onClick = { onToggleSelect(item.id) },
-                onLongClick = { onConsumeItem(item.id) }
+                onClick = {
+                    if (isInBulkDeleteMode) onToggleDeleteSelect(item.id)
+                    else onToggleSelect(item.id)
+                },
+                onLongClick = {
+                    if (isInBulkDeleteMode) onToggleDeleteSelect(item.id)
+                    else onEnterBulkDeleteMode(item.id)
+                }
             ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -155,23 +167,34 @@ fun InventoryItem(
                 }
             }
 
-            // ── Seçim check badge (sağ üst köşe) ──────────────────────
-            if (isSelected) {
+            // ── Sağ üst köşe badge ─────────────────────────────────────
+            val showBadge = isSelected || (isInBulkDeleteMode && isDeleteSelected)
+            if (showBadge) {
+                val badgeColor = if (isInBulkDeleteMode)
+                    MaterialTheme.colorScheme.error
+                else
+                    MaterialTheme.colorScheme.primary
+
+                val badgeBgColor = if (isInBulkDeleteMode)
+                    MaterialTheme.colorScheme.errorContainer
+                else
+                    MaterialTheme.colorScheme.primaryContainer
+
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
                         .size(20.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                    color = badgeBgColor,
                     shadowElevation = 2.dp
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Seçili",
+                            imageVector = if (isInBulkDeleteMode) Icons.Default.Close else Icons.Default.Check,
+                            contentDescription = if (isInBulkDeleteMode) "Silinecek" else "Seçili",
                             modifier = Modifier.size(12.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = badgeColor
                         )
                     }
                 }

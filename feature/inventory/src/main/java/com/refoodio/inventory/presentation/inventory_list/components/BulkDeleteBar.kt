@@ -13,10 +13,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.RestaurantMenu
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,15 +29,16 @@ import androidx.compose.ui.unit.dp
 import com.refoodio.core.ui.theme.RefoodioTheme
 
 @Composable
-fun RecipeWizardBar(
+fun BulkDeleteBar(
     selectedCount: Int,
-    onOpenBasket: () -> Unit,
-    onClearSelection: () -> Unit,
-    onEditSingleItem: () -> Unit,
+    isVisible: Boolean,
+    onSelectAll: () -> Unit,
+    onDelete: () -> Unit,
+    onExit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
-        visible = selectedCount > 0,
+        visible = isVisible,
         enter = slideInVertically(initialOffsetY = { it }),
         exit = slideOutVertically(targetOffsetY = { it })
     ) {
@@ -46,7 +47,7 @@ fun RecipeWizardBar(
                 .fillMaxWidth()
                 .padding(RefoodioTheme.spacing.medium),
             shape = RoundedCornerShape(RefoodioTheme.spacing.large),
-            color = MaterialTheme.colorScheme.primaryContainer,
+            color = MaterialTheme.colorScheme.errorContainer,
             shadowElevation = 8.dp
         ) {
             Row(
@@ -57,58 +58,58 @@ fun RecipeWizardBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.RestaurantMenu,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                Text(
-                    text = if (selectedCount > 1) "$selectedCount malzeme tezgahta" else "Tezgah",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // Düzenle — sadece tek ürün seçiliyken
-                if (selectedCount == 1) {
-                    IconButton(
-                        onClick = onEditSingleItem,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Düzenle",
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-
-                // Seçimi temizle
+                // Çıkış
                 IconButton(
-                    onClick = onClearSelection,
+                    onClick = onExit,
                     modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Temizle",
+                        contentDescription = "İptal",
                         modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        tint = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
 
-                Button(onClick = onOpenBasket) {
-                    Text("Tezgahı Aç")
-                    Spacer(modifier = Modifier.width(4.dp))
+                // Seçili sayısı
+                Text(
+                    text = if (selectedCount > 0) "$selectedCount seçildi" else "Seç",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // Tümünü seç
+                IconButton(
+                    onClick = onSelectAll,
+                    modifier = Modifier.size(36.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
+                        imageVector = Icons.Default.SelectAll,
+                        contentDescription = "Tümünü Seç",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Sil butonu
+                Button(
+                    onClick = onDelete,
+                    enabled = selectedCount > 0,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Sil")
                 }
             }
         }

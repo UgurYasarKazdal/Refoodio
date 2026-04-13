@@ -49,6 +49,9 @@ class InventoryViewModel @Inject constructor(
     // Ham liste — arama/sıralama bu üzerinden hesaplanır
     private var allItems: List<InventoryListContract.InventoryItemUiModel> = emptyList()
 
+    // Son silinen ürünler — undo için tutulur
+    private var lastDeletedItems = mutableListOf<InventoryItem>()
+
     init {
         loadInventories()
     }
@@ -81,24 +84,8 @@ class InventoryViewModel @Inject constructor(
 
     fun handleEvent(event: InventoryListContract.Event) {
         when (event) {
-            is InventoryListContract.Event.OnRequestDelete -> {
-                _state.update { it.copy(showDeleteConfirmation = true) }
-            }
 
-            is InventoryListContract.Event.OnDeleteDismissed -> {
-                _state.update { it.copy(showDeleteConfirmation = false) }
-            }
-
-            is InventoryListContract.Event.DeleteInventory -> {
-                _state.update { it.copy(showDeleteConfirmation = false) }
-                val idsToDelete = state.value.selectedIds.toList()
-                if (idsToDelete.isNotEmpty()) {
-                    deleteInventory(idsToDelete)
-                }
-            }
-
-            is InventoryListContract.Event.LoadInventories -> loadInventories()
-
+            // ── Tezgah seçimi ──────────────────────────────────────────────
             is InventoryListContract.Event.OnToggleSelect -> toggleSelection(event.id)
 
             is InventoryListContract.Event.OnClearSelection -> {
@@ -108,13 +95,69 @@ class InventoryViewModel @Inject constructor(
             is InventoryListContract.Event.OnFindRecipesClick -> {
                 val idsString = _state.value.selectedIds.joinToString(",")
                 viewModelScope.launch {
-                    _effect.send(
-                        InventoryListContract.SideEffect.NavigateToRecipesWithFilters(
-                            idsString
-                        )
+                    _effect.send(InventoryListContract.SideEffect.NavigateToRecipesWithFilters(idsString))
+                }
+            }
+
+            // ── Swipe to delete (tekil) ────────────────────────────────────
+            is InventoryListContract.Event.OnSwipeDelete -> {
+                val item = allItems.find { it.id == event.id }?.originalItem ?: return
+                lastDeletedItems = mutableListOf(item)
+                // Tezgah seçiminden de çıkar
+                _state.update { it.copy(selectedIds = it.selectedIds - event.id) }
+                deleteItems(listOf(event.id), undoLabel = item.name)
+            }
+
+            is InventoryListContract.Event.OnUndoDelete -> {
+                lastDeletedItems.forEach { item ->
+                    insertInventory(item).launchIn(viewModelScope)
+                }
+                lastDeletedItems.clear()
+            }
+
+            // ── Toplu silme modu ───────────────────────────────────────────
+            is InventoryListContract.Event.OnEnterBulkDeleteMode -> {
+                _state.update {
+                    it.copy(
+                        isInBulkDeleteMode = true,
+                        deleteSelectedIds = setOf(event.id)
                     )
                 }
             }
+
+            is InventoryListContract.Event.OnToggleDeleteSelect -> {
+                _state.update { currentState ->
+                    val newIds = if (currentState.deleteSelectedIds.contains(event.id))
+                        currentState.deleteSelectedIds - event.id
+                    else
+                        currentState.deleteSelectedIds + event.id
+                    currentState.copy(deleteSelectedIds = newIds)
+                }
+            }
+
+            is InventoryListContract.Event.OnSelectAllForDelete -> {
+                val allIds = allItems.map { it.id }.toSet()
+                _state.update { it.copy(deleteSelectedIds = allIds) }
+            }
+
+            is InventoryListContract.Event.OnExitBulkDeleteMode -> {
+                _state.update { it.copy(isInBulkDeleteMode = false, deleteSelectedIds = emptySet()) }
+            }
+
+            is InventoryListContract.Event.OnConfirmBulkDelete -> {
+                val idsToDelete = _state.value.deleteSelectedIds.toList()
+                if (idsToDelete.isEmpty()) return
+                lastDeletedItems = allItems
+                    .filter { idsToDelete.contains(it.id) }
+                    .map { it.originalItem }
+                    .toMutableList()
+                val label = buildUndoLabel(lastDeletedItems)
+                _state.update { it.copy(isInBulkDeleteMode = false, deleteSelectedIds = emptySet()) }
+                deleteItems(idsToDelete, undoLabel = label)
+            }
+
+            // ── Yükleme ve navigasyon ──────────────────────────────────────
+            is InventoryListContract.Event.LoadInventories -> loadInventories()
 
             is InventoryListContract.Event.NavigateAddInventory -> {
                 viewModelScope.launch {
@@ -128,6 +171,13 @@ class InventoryViewModel @Inject constructor(
                 }
             }
 
+            is InventoryListContract.Event.OnEditItem -> {
+                viewModelScope.launch {
+                    _effect.send(InventoryListContract.SideEffect.NavigateToEditInventory(event.itemId))
+                }
+            }
+
+            // ── Kamera / barkod ────────────────────────────────────────────
             is InventoryListContract.Event.OnToggleCamera -> {
                 _state.update { it.copy(isCameraVisible = !it.isCameraVisible) }
             }
@@ -160,7 +210,7 @@ class InventoryViewModel @Inject constructor(
                             _state.update { it.copy(isBarcodeLoading = false) }
                             _effect.send(
                                 InventoryListContract.SideEffect.ShowSnackbar(
-                                    UiText.DynamicString(e.message ?: "Ürün bulunamadı")
+                                    DynamicString(e.message ?: "Ürün bulunamadı")
                                 )
                             )
                         }
@@ -186,13 +236,11 @@ class InventoryViewModel @Inject constructor(
                     when (result) {
                         is Resource.Success -> _effect.send(
                             InventoryListContract.SideEffect.ShowSnackbar(
-                                UiText.DynamicString("${item.name} eklendi")
+                                DynamicString("${item.name} eklendi")
                             )
                         )
                         is Resource.Error -> _effect.send(
-                            InventoryListContract.SideEffect.ShowSnackbar(
-                                UiText.DynamicString("Eklenemedi")
-                            )
+                            InventoryListContract.SideEffect.ShowSnackbar(DynamicString("Eklenemedi"))
                         )
                         else -> Unit
                     }
@@ -203,6 +251,7 @@ class InventoryViewModel @Inject constructor(
                 _state.update { it.copy(scannedItem = null) }
             }
 
+            // ── Grup genişletme ────────────────────────────────────────────
             is InventoryListContract.Event.ToggleGroupExpansion -> {
                 val newExpanded = if (_state.value.expandedGroups.contains(event.foodGroup))
                     _state.value.expandedGroups - event.foodGroup
@@ -211,16 +260,7 @@ class InventoryViewModel @Inject constructor(
                 _state.update { it.copy(expandedGroups = newExpanded) }
             }
 
-            is InventoryListContract.Event.OnEditItem -> {
-                viewModelScope.launch {
-                    _effect.send(InventoryListContract.SideEffect.NavigateToEditInventory(event.itemId))
-                }
-            }
-
-            is InventoryListContract.Event.OnDeleteSingleItem -> {
-                deleteInventory(listOf(event.id))
-            }
-
+            // ── Arama / sıralama ───────────────────────────────────────────
             is InventoryListContract.Event.OnSearchQueryChanged -> {
                 _state.update { it.copy(searchQuery = event.query) }
                 applyFilters()
@@ -231,6 +271,7 @@ class InventoryViewModel @Inject constructor(
                 applyFilters()
             }
 
+            // ── Tüket dialogu ──────────────────────────────────────────────
             is InventoryListContract.Event.OnConsumeClick -> {
                 val item = allItems.find { it.id == event.id } ?: return
                 _state.update { it.copy(consumeItem = item) }
@@ -240,12 +281,11 @@ class InventoryViewModel @Inject constructor(
                 val item = _state.value.consumeItem ?: return
                 _state.update { it.copy(consumeItem = null) }
                 val newQty = (item.originalItem.quantity - event.amount).coerceAtLeast(0.0)
-                val updated = item.originalItem.copy(quantity = newQty)
-                updateInventory(updated).onEach { result ->
+                updateInventory(item.originalItem.copy(quantity = newQty)).onEach { result ->
                     if (result is Resource.Error) {
-                        _effect.send(InventoryListContract.SideEffect.ShowSnackbar(
-                            UiText.DynamicString("Güncellenemedi")
-                        ))
+                        _effect.send(
+                            InventoryListContract.SideEffect.ShowSnackbar(DynamicString("Güncellenemedi"))
+                        )
                     }
                 }.launchIn(viewModelScope)
             }
@@ -258,14 +298,16 @@ class InventoryViewModel @Inject constructor(
                 event.amounts.filter { it.value > 0.0 }.forEach { (id, amount) ->
                     val item = allItems.find { it.id == id } ?: return@forEach
                     val newQty = (item.originalItem.quantity - amount).coerceAtLeast(0.0)
-                    updateInventory(item.originalItem.copy(quantity = newQty))
-                        .launchIn(viewModelScope)
+                    updateInventory(item.originalItem.copy(quantity = newQty)).launchIn(viewModelScope)
                 }
                 _state.update { it.copy(selectedIds = emptySet()) }
             }
-
-            else -> Unit
         }
+    }
+
+    private fun buildUndoLabel(items: List<InventoryItem>): String {
+        val names = items.take(2).joinToString(", ") { it.name }
+        return if (items.size > 2) "$names ve ${items.size - 2} diğeri" else names
     }
 
     private fun loadInventories() {
@@ -277,7 +319,6 @@ class InventoryViewModel @Inject constructor(
 
                 is Resource.Success -> {
                     viewModelScope.launch(Dispatchers.Default) {
-                        // Hesaplamayı arka plana al
                         val now = System.currentTimeMillis()
                         val mapped = result.data.map { item ->
                             val group = item.category.toFoodGroup()
@@ -327,31 +368,32 @@ class InventoryViewModel @Inject constructor(
 
     private fun toggleSelection(foodId: Int) {
         _state.update { currentState ->
-            val newSelectedIds = if (currentState.selectedIds.contains(foodId)) {
+            val newSelectedIds = if (currentState.selectedIds.contains(foodId))
                 currentState.selectedIds - foodId
-            } else {
+            else
                 currentState.selectedIds + foodId
-            }
             currentState.copy(selectedIds = newSelectedIds)
         }
     }
 
-    private fun deleteInventory(inventories: List<Int>) {
-        inventoryListUseCases.deleteSelectedInventories(inventories).onEach { result ->
+    private fun deleteItems(ids: List<Int>, undoLabel: String = "") {
+        inventoryListUseCases.deleteSelectedInventories(ids).onEach { result ->
             when (result) {
                 is Resource.Loading -> {
                     _state.update { it.copy(isLoading = true) }
                 }
-
                 is Resource.Success -> {
-                    _state.update { it.copy(isLoading = false, selectedIds = emptySet()) }
-                    _effect.send(
-                        InventoryListContract.SideEffect.ShowSnackbar(
-                            UiText.StringResource(R.string.inventory_deleted_successfully)
+                    _state.update { it.copy(isLoading = false, selectedIds = it.selectedIds - ids.toSet()) }
+                    if (undoLabel.isNotEmpty()) {
+                        _effect.send(InventoryListContract.SideEffect.ShowUndoDeleteSnackbar(undoLabel))
+                    } else {
+                        _effect.send(
+                            InventoryListContract.SideEffect.ShowSnackbar(
+                                UiText.StringResource(R.string.inventory_deleted_successfully)
+                            )
                         )
-                    )
+                    }
                 }
-
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
                     val uiText = result.errorType.asInventoryErrorText()

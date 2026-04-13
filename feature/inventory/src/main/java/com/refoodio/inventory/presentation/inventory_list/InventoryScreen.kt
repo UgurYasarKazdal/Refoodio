@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Sort
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,21 +38,23 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.ui.text.input.KeyboardType
 import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.domain.model.recipe.FoodCategory
@@ -81,6 +82,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.refoodio.core.ui.components.camera.CameraPreview
 import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
+import com.refoodio.inventory.presentation.inventory_list.components.BulkDeleteBar
 import com.refoodio.inventory.presentation.inventory_list.components.InventoryContent
 import com.refoodio.inventory.presentation.inventory_list.components.RecipeWizardBar
 import com.refoodio.inventory.presentation.inventory_list.components.SelectionBasketSheet
@@ -116,6 +118,18 @@ fun InventoryScreen(
             when (effect) {
                 is InventoryListContract.SideEffect.ShowSnackbar ->
                     scope.launch { snackbarHostState.showSnackbar(effect.message.asString(context)) }
+                is InventoryListContract.SideEffect.ShowUndoDeleteSnackbar -> {
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "${effect.names} silindi",
+                            actionLabel = "Geri Al",
+                            duration = SnackbarDuration.Short
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.handleEvent(InventoryListContract.Event.OnUndoDelete)
+                        }
+                    }
+                }
                 is InventoryListContract.SideEffect.NavigateToAddInventory -> onNavigateToAddInventory()
                 is InventoryListContract.SideEffect.NavigateToEditInventory -> onNavigateToEditInventory(effect.itemId)
                 is InventoryListContract.SideEffect.NavigateToRecipesWithFilters -> onNavigateToRecipes(effect.selectedIds)
@@ -163,25 +177,6 @@ fun InventoryScreen(
         )
     }
 
-    if (state.showDeleteConfirmation) {
-        AlertDialog(
-            onDismissRequest = { viewModel.handleEvent(InventoryListContract.Event.OnDeleteDismissed) },
-            title = { Text("Ürünleri Sil") },
-            text = { Text("${selectedCount} ürün envanterden kalıcı olarak silinecek. Onaylıyor musun?") },
-            confirmButton = {
-                Button(
-                    onClick = { viewModel.handleEvent(InventoryListContract.Event.DeleteInventory) },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Sil") }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.handleEvent(InventoryListContract.Event.OnDeleteDismissed) }) {
-                    Text("İptal")
-                }
-            }
-        )
-    }
-
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
@@ -223,11 +218,20 @@ fun InventoryScreen(
             Box(modifier = Modifier.weight(1f)) {
                 InventoryContent(state = state, onEvent = viewModel::handleEvent)
 
+                // Toplu silme modundayken BulkDeleteBar, değilse RecipeWizardBar
+                BulkDeleteBar(
+                    selectedCount = state.deleteSelectedIds.size,
+                    isVisible = state.isInBulkDeleteMode,
+                    onSelectAll = { viewModel.handleEvent(InventoryListContract.Event.OnSelectAllForDelete) },
+                    onDelete = { viewModel.handleEvent(InventoryListContract.Event.OnConfirmBulkDelete) },
+                    onExit = { viewModel.handleEvent(InventoryListContract.Event.OnExitBulkDeleteMode) },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+
                 RecipeWizardBar(
-                    selectedCount = selectedCount,
+                    selectedCount = if (state.isInBulkDeleteMode) 0 else selectedCount,
                     onOpenBasket = { showBasketSheet = true },
                     onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
-                    onDeleteSelected = { viewModel.handleEvent(InventoryListContract.Event.OnRequestDelete) },
                     onEditSingleItem = {
                         val id = state.selectedIds.firstOrNull() ?: return@RecipeWizardBar
                         viewModel.handleEvent(InventoryListContract.Event.OnEditItem(id))
