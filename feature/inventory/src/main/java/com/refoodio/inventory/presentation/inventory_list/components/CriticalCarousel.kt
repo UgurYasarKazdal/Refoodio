@@ -19,8 +19,8 @@ import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 @Composable
 fun CriticalCarousel(
     criticalItems: List<InventoryListContract.InventoryItemUiModel>,
-    selectedIds: Set<Int>,
-    onToggleSelect: (Int) -> Unit,
+    tezgahItems: Map<Int, Double>,
+    onItemTapped: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -36,12 +36,11 @@ fun CriticalCarousel(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(items = criticalItems, key = { it.id } // Stabil ID
-            ) { item ->
+            items(items = criticalItems, key = { it.id }) { item ->
                 CriticalCarouselItem(
                     item = item,
-                    isSelected = selectedIds.contains(item.id),
-                    onToggleSelect = onToggleSelect
+                    tezgahQuantity = tezgahItems[item.id],
+                    onItemTapped = onItemTapped
                 )
             }
         }

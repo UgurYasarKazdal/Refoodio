@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,9 +41,9 @@ import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 @Composable
 fun InventoryItem(
     item: InventoryListContract.InventoryItemUiModel,
-    // Tezgah seçimi
-    isSelected: Boolean,
-    onToggleSelect: (Int) -> Unit,
+    // Tezgah — null ise tezgahta yok, > 0 ise o kadar konulmuş
+    tezgahQuantity: Double?,
+    onItemTapped: (Int) -> Unit,
     // Toplu silme modu
     isInBulkDeleteMode: Boolean,
     isDeleteSelected: Boolean,
@@ -52,6 +51,8 @@ fun InventoryItem(
     onEnterBulkDeleteMode: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val unitName = stringResource(item.unit.shortNameResId)
+
     val urgencyColor = when (item.urgencyLevel) {
         InventoryListContract.UrgencyLevel.CRITICAL -> MaterialTheme.colorScheme.error
         InventoryListContract.UrgencyLevel.WARNING  -> MaterialTheme.colorScheme.tertiary
@@ -72,7 +73,7 @@ fun InventoryItem(
         targetValue = when {
             isInBulkDeleteMode && isDeleteSelected -> MaterialTheme.colorScheme.errorContainer
             isInBulkDeleteMode -> MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
-            isSelected -> MaterialTheme.colorScheme.primaryContainer
+            tezgahQuantity != null -> MaterialTheme.colorScheme.primaryContainer
             else -> MaterialTheme.colorScheme.surface
         },
         label = "card_color"
@@ -85,7 +86,7 @@ fun InventoryItem(
             .combinedClickable(
                 onClick = {
                     if (isInBulkDeleteMode) onToggleDeleteSelect(item.id)
-                    else onToggleSelect(item.id)
+                    else onItemTapped(item.id)
                 },
                 onLongClick = {
                     if (isInBulkDeleteMode) onToggleDeleteSelect(item.id)
@@ -168,35 +169,44 @@ fun InventoryItem(
             }
 
             // ── Sağ üst köşe badge ─────────────────────────────────────
-            val showBadge = isSelected || (isInBulkDeleteMode && isDeleteSelected)
-            if (showBadge) {
-                val badgeColor = if (isInBulkDeleteMode)
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.primary
-
-                val badgeBgColor = if (isInBulkDeleteMode)
-                    MaterialTheme.colorScheme.errorContainer
-                else
-                    MaterialTheme.colorScheme.primaryContainer
-
+            if (isInBulkDeleteMode && isDeleteSelected) {
+                // Silme modu seçili: kırmızı ✕
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
                         .size(20.dp),
                     shape = CircleShape,
-                    color = badgeBgColor,
+                    color = MaterialTheme.colorScheme.errorContainer,
                     shadowElevation = 2.dp
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = if (isInBulkDeleteMode) Icons.Default.Close else Icons.Default.Check,
-                            contentDescription = if (isInBulkDeleteMode) "Silinecek" else "Seçili",
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Silinecek",
                             modifier = Modifier.size(12.dp),
-                            tint = badgeColor
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
+                }
+            } else if (tezgahQuantity != null && !isInBulkDeleteMode) {
+                // Tezgahta — miktar etiketi
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    shadowElevation = 2.dp
+                ) {
+                    Text(
+                        text = "${"%.1f".format(tezgahQuantity)} $unitName",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                    )
                 }
             }
         }

@@ -90,15 +90,38 @@ class InventoryViewModel @Inject constructor(
     fun handleEvent(event: InventoryListContract.Event) {
         when (event) {
 
-            // ── Tezgah seçimi ──────────────────────────────────────────────
-            is InventoryListContract.Event.OnToggleSelect -> toggleSelection(event.id)
+            // ── Tezgah (ölçü seçimi ile) ───────────────────────────────────
+            is InventoryListContract.Event.OnItemTapped -> {
+                // Bulk delete modundaysa tap → silme seçimi toggle
+                if (_state.value.isInBulkDeleteMode) {
+                    handleEvent(InventoryListContract.Event.OnToggleDeleteSelect(event.id))
+                    return
+                }
+                val item = allItems.find { it.id == event.id } ?: return
+                _state.update { it.copy(measurementItem = item) }
+            }
 
-            is InventoryListContract.Event.OnClearSelection -> {
-                _state.update { it.copy(selectedIds = emptySet()) }
+            is InventoryListContract.Event.OnDismissMeasurement -> {
+                _state.update { it.copy(measurementItem = null) }
+            }
+
+            is InventoryListContract.Event.OnTezgahAdd -> {
+                _state.update { currentState ->
+                    val newTezgah = currentState.tezgahItems + (event.id to event.quantity)
+                    currentState.copy(tezgahItems = newTezgah, measurementItem = null)
+                }
+            }
+
+            is InventoryListContract.Event.OnRemoveFromTezgah -> {
+                _state.update { it.copy(tezgahItems = it.tezgahItems - event.id) }
+            }
+
+            is InventoryListContract.Event.OnClearTezgah -> {
+                _state.update { it.copy(tezgahItems = emptyMap()) }
             }
 
             is InventoryListContract.Event.OnFindRecipesClick -> {
-                val idsString = _state.value.selectedIds.joinToString(",")
+                val idsString = _state.value.tezgahItems.keys.joinToString(",")
                 viewModelScope.launch {
                     _effect.send(InventoryListContract.SideEffect.NavigateToRecipesWithFilters(idsString))
                 }
@@ -108,8 +131,8 @@ class InventoryViewModel @Inject constructor(
             is InventoryListContract.Event.OnSwipeDelete -> {
                 val item = allItems.find { it.id == event.id }?.originalItem ?: return
                 lastDeletedItems = mutableListOf(item)
-                // Tezgah seçiminden de çıkar
-                _state.update { it.copy(selectedIds = it.selectedIds - event.id) }
+                // Tezgahtan da çıkar
+                _state.update { it.copy(tezgahItems = it.tezgahItems - event.id) }
                 deleteItems(listOf(event.id), undoLabel = item.name)
             }
 
@@ -144,7 +167,13 @@ class InventoryViewModel @Inject constructor(
                 lastDeletedItems = items.toMutableList()
                 lastDeleteWasWaste = true
                 val label = buildUndoLabel(items)
-                _state.update { it.copy(isInBulkDeleteMode = false, deleteSelectedIds = emptySet()) }
+                _state.update {
+                    it.copy(
+                        isInBulkDeleteMode = false,
+                        deleteSelectedIds = emptySet(),
+                        tezgahItems = it.tezgahItems - idsToDelete.toSet()
+                    )
+                }
                 deleteItems(idsToDelete, undoLabel = label)
             }
 
@@ -197,7 +226,13 @@ class InventoryViewModel @Inject constructor(
                     .map { it.originalItem }
                     .toMutableList()
                 val label = buildUndoLabel(lastDeletedItems)
-                _state.update { it.copy(isInBulkDeleteMode = false, deleteSelectedIds = emptySet()) }
+                _state.update {
+                    it.copy(
+                        isInBulkDeleteMode = false,
+                        deleteSelectedIds = emptySet(),
+                        tezgahItems = it.tezgahItems - idsToDelete.toSet()
+                    )
+                }
                 deleteItems(idsToDelete, undoLabel = label)
             }
 
@@ -345,7 +380,8 @@ class InventoryViewModel @Inject constructor(
                     val newQty = (item.originalItem.quantity - amount).coerceAtLeast(0.0)
                     updateInventory(item.originalItem.copy(quantity = newQty)).launchIn(viewModelScope)
                 }
-                _state.update { it.copy(selectedIds = emptySet()) }
+                // Tezgahı temizle — ürünler tüketildi
+                _state.update { it.copy(tezgahItems = emptyMap()) }
             }
         }
     }
@@ -411,16 +447,6 @@ class InventoryViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun toggleSelection(foodId: Int) {
-        _state.update { currentState ->
-            val newSelectedIds = if (currentState.selectedIds.contains(foodId))
-                currentState.selectedIds - foodId
-            else
-                currentState.selectedIds + foodId
-            currentState.copy(selectedIds = newSelectedIds)
-        }
-    }
-
     private fun deleteItems(ids: List<Int>, undoLabel: String = "") {
         inventoryListUseCases.deleteSelectedInventories(ids).onEach { result ->
             when (result) {
@@ -428,7 +454,7 @@ class InventoryViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = true) }
                 }
                 is Resource.Success -> {
-                    _state.update { it.copy(isLoading = false, selectedIds = it.selectedIds - ids.toSet()) }
+                    _state.update { it.copy(isLoading = false, tezgahItems = it.tezgahItems - ids.toSet()) }
                     if (undoLabel.isNotEmpty()) {
                         _effect.send(InventoryListContract.SideEffect.ShowUndoDeleteSnackbar(undoLabel))
                     } else {

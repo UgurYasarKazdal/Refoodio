@@ -22,8 +22,10 @@ interface InventoryListContract {
         val criticalItems: List<InventoryItemUiModel> = emptyList(),
         val sectionedItems: Map<FoodGroup, List<InventoryItemUiModel>> = emptyMap(),
         val expandedGroups: Set<FoodGroup> = FoodGroup.values().toSet(),
-        // Tezgah seçimi
-        val selectedIds: Set<Int> = emptySet(),
+        // Tezgah: itemId → tezgaha konulan miktar
+        val tezgahItems: Map<Int, Double> = emptyMap(),
+        // Ölçü seçim sheet'i açık olan ürün
+        val measurementItem: InventoryItemUiModel? = null,
         // Toplu silme modu
         val isInBulkDeleteMode: Boolean = false,
         val deleteSelectedIds: Set<Int> = emptySet(),
@@ -55,9 +57,15 @@ interface InventoryListContract {
 
     sealed interface Event {
         data object LoadInventories : Event
-        data class OnToggleSelect(val id: Int) : Event
+        // Ürüne tıklandı → ölçü sheet aç
+        data class OnItemTapped(val id: Int) : Event
+        data object OnDismissMeasurement : Event
+        // Ölçü seçildi → tezgaha ekle / güncelle
+        data class OnTezgahAdd(val id: Int, val quantity: Double) : Event
+        // Tezgahtan çıkar (sheet'ten veya RecipeWizardBar'dan)
+        data class OnRemoveFromTezgah(val id: Int) : Event
+        data object OnClearTezgah : Event
         data object OnFindRecipesClick : Event
-        data object OnClearSelection : Event
         data object NavigateAddInventory : Event
         data object NavigateToReceiptScan : Event
         data object OnToggleCamera : Event
@@ -76,12 +84,9 @@ interface InventoryListContract {
         data class OnConsumeConfirm(val amount: Double) : Event
         data object OnConsumeDismiss : Event
         data class OnBulkConsume(val amounts: Map<Int, Double>) : Event
-        // Swipe to delete (tekil)
+        // Swipe to delete
         data class OnSwipeDelete(val id: Int) : Event
         data object OnUndoDelete : Event
-        // İsraf kaydı
-        data object OnMarkSelectedAsWasted : Event
-        // Snackbar süresi doldu, geri alınmadı → varsa waste log yaz
         data object OnDeleteConfirmed : Event
         // Toplu silme modu
         data class OnEnterBulkDeleteMode(val id: Int) : Event
@@ -89,6 +94,8 @@ interface InventoryListContract {
         data object OnSelectAllForDelete : Event
         data object OnExitBulkDeleteMode : Event
         data object OnConfirmBulkDelete : Event
+        // İsraf kaydı
+        data object OnMarkSelectedAsWasted : Event
     }
 
     sealed interface SideEffect {

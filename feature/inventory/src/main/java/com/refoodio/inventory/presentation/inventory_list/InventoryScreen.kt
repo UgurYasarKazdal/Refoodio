@@ -60,7 +60,6 @@ import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.domain.model.recipe.FoodCategory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,6 +83,7 @@ import com.refoodio.core.ui.theme.RefoodioTheme
 import com.refoodio.inventory.R
 import com.refoodio.inventory.presentation.inventory_list.components.BulkDeleteBar
 import com.refoodio.inventory.presentation.inventory_list.components.InventoryContent
+import com.refoodio.inventory.presentation.inventory_list.components.MeasurementBottomSheet
 import com.refoodio.inventory.presentation.inventory_list.components.RecipeWizardBar
 import com.refoodio.inventory.presentation.inventory_list.components.SelectionBasketSheet
 import kotlinx.coroutines.launch
@@ -103,9 +103,7 @@ fun InventoryScreen(
     var isFabExpanded by remember { mutableStateOf(false) }
     var showBasketSheet by remember { mutableStateOf(false) }
 
-    val selectedCount by remember(state.selectedIds) {
-        derivedStateOf { state.selectedIds.size }
-    }
+    val tezgahCount = state.tezgahItems.size
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -180,6 +178,22 @@ fun InventoryScreen(
         )
     }
 
+    // Ölçü seçim bottom sheet
+    val measurementItem = state.measurementItem
+    if (measurementItem != null) {
+        MeasurementBottomSheet(
+            item = measurementItem,
+            currentTezgahQuantity = state.tezgahItems[measurementItem.id],
+            onTezgahAdd = { id, qty ->
+                viewModel.handleEvent(InventoryListContract.Event.OnTezgahAdd(id, qty))
+            },
+            onRemoveFromTezgah = { id ->
+                viewModel.handleEvent(InventoryListContract.Event.OnRemoveFromTezgah(id))
+            },
+            onDismiss = { viewModel.handleEvent(InventoryListContract.Event.OnDismissMeasurement) }
+        )
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
@@ -233,11 +247,11 @@ fun InventoryScreen(
                 )
 
                 RecipeWizardBar(
-                    selectedCount = if (state.isInBulkDeleteMode) 0 else selectedCount,
+                    selectedCount = if (state.isInBulkDeleteMode) 0 else tezgahCount,
                     onOpenBasket = { showBasketSheet = true },
-                    onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearSelection) },
+                    onClearSelection = { viewModel.handleEvent(InventoryListContract.Event.OnClearTezgah) },
                     onEditSingleItem = {
-                        val id = state.selectedIds.firstOrNull() ?: return@RecipeWizardBar
+                        val id = state.tezgahItems.keys.firstOrNull() ?: return@RecipeWizardBar
                         viewModel.handleEvent(InventoryListContract.Event.OnEditItem(id))
                     },
                     modifier = Modifier.align(Alignment.BottomCenter)
@@ -245,13 +259,14 @@ fun InventoryScreen(
             }
         }
 
-        // Seçim sepeti sheet
-        if (showBasketSheet && state.selectedIds.isNotEmpty()) {
-            val selectedItems = state.sectionedItems.values.flatten()
-                .filter { state.selectedIds.contains(it.id) }
+        // Tezgah sepeti sheet — sadece tezgahta ürün varsa
+        if (showBasketSheet && state.tezgahItems.isNotEmpty()) {
+            val tezgahItemUiModels = state.sectionedItems.values.flatten()
+                .filter { state.tezgahItems.containsKey(it.id) }
 
             SelectionBasketSheet(
-                selectedItems = selectedItems,
+                selectedItems = tezgahItemUiModels,
+                initialAmounts = state.tezgahItems,
                 onDismiss = { showBasketSheet = false },
                 onFindRecipes = {
                     showBasketSheet = false
@@ -262,7 +277,7 @@ fun InventoryScreen(
                     viewModel.handleEvent(InventoryListContract.Event.OnBulkConsume(amounts))
                 },
                 onDeselectItem = { id ->
-                    viewModel.handleEvent(InventoryListContract.Event.OnToggleSelect(id))
+                    viewModel.handleEvent(InventoryListContract.Event.OnRemoveFromTezgah(id))
                 }
             )
         }

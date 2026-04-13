@@ -71,9 +71,9 @@ fun InventoryContent(
             item {
                 CriticalCarousel(
                     criticalItems = state.criticalItems,
-                    selectedIds = state.selectedIds,
-                    onToggleSelect = { id ->
-                        onEvent(InventoryListContract.Event.OnToggleSelect(id))
+                    tezgahItems = state.tezgahItems,
+                    onItemTapped = { id ->
+                        onEvent(InventoryListContract.Event.OnItemTapped(id))
                     }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -158,9 +158,9 @@ fun InventoryContent(
                                     ) {
                                         InventoryItem(
                                             item = uiModel,
-                                            isSelected = state.selectedIds.contains(uiModel.id),
-                                            onToggleSelect = {
-                                                onEvent(InventoryListContract.Event.OnToggleSelect(it))
+                                            tezgahQuantity = state.tezgahItems[uiModel.id],
+                                            onItemTapped = {
+                                                onEvent(InventoryListContract.Event.OnItemTapped(it))
                                             },
                                             isInBulkDeleteMode = state.isInBulkDeleteMode,
                                             isDeleteSelected = state.deleteSelectedIds.contains(uiModel.id),

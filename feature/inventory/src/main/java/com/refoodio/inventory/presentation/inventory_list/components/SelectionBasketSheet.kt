@@ -53,6 +53,7 @@ import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 @Composable
 fun SelectionBasketSheet(
     selectedItems: List<InventoryListContract.InventoryItemUiModel>,
+    initialAmounts: Map<Int, Double> = emptyMap(),  // tezgahItems'dan gelir
     onDismiss: () -> Unit,
     onFindRecipes: () -> Unit,
     onBulkConsume: (amounts: Map<Int, Double>) -> Unit,
@@ -61,10 +62,12 @@ fun SelectionBasketSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // Varsayılan = ürünün mevcut miktarı
+    // Başlangıç = tezgahta belirlenen miktar, yoksa ürünün mevcut miktarı
     val amounts = remember(selectedItems) {
         mutableStateMapOf<Int, Double>().apply {
-            selectedItems.forEach { put(it.id, it.originalItem.quantity) }
+            selectedItems.forEach { item ->
+                put(item.id, initialAmounts[item.id] ?: item.originalItem.quantity)
+            }
         }
     }
 

@@ -24,28 +24,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
 
 
 @Composable
 fun CriticalCarouselItem(
     item: InventoryListContract.InventoryItemUiModel,
-    isSelected: Boolean,
-    onToggleSelect: (Int) -> Unit
+    tezgahQuantity: Double?,          // null → tezgahta yok
+    onItemTapped: (Int) -> Unit
 ) {
+    val unitName = stringResource(item.unit.shortNameResId)
+    val isOnTezgah = tezgahQuantity != null
+
     Surface(
         modifier = Modifier
             .width(160.dp)
             .height(100.dp)
-            .clickable { onToggleSelect(item.id) },
+            .clickable { onItemTapped(item.id) },
         shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.errorContainer
+        color = if (isOnTezgah) MaterialTheme.colorScheme.primaryContainer
         else MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             width = 1.dp,
-            color = if (isSelected) MaterialTheme.colorScheme.error
+            color = if (isOnTezgah) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.outlineVariant
         ),
         shadowElevation = 2.dp
@@ -67,7 +72,7 @@ fun CriticalCarouselItem(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "${item.quantityText.asString()} ${stringResource(item.unit.shortNameResId)}",
+                        text = "${item.quantityText.asString()} $unitName",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -84,6 +89,25 @@ fun CriticalCarouselItem(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.error
                 )
+            }
+
+            // Tezgah miktar badge — sağ üst köşe
+            if (isOnTezgah) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd),
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.primary
+                ) {
+                    Text(
+                        text = "${"%.1f".format(tezgahQuantity)} $unitName",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                    )
+                }
             }
         }
     }
