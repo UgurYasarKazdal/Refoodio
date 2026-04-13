@@ -127,6 +127,9 @@ fun InventoryScreen(
                         )
                         if (result == SnackbarResult.ActionPerformed) {
                             viewModel.handleEvent(InventoryListContract.Event.OnUndoDelete)
+                        } else {
+                            // Geri alınmadı — bozuldu silinmesiyse waste log şimdi yazılır
+                            viewModel.handleEvent(InventoryListContract.Event.OnDeleteConfirmed)
                         }
                     }
                 }
@@ -224,6 +227,7 @@ fun InventoryScreen(
                     isVisible = state.isInBulkDeleteMode,
                     onSelectAll = { viewModel.handleEvent(InventoryListContract.Event.OnSelectAllForDelete) },
                     onDelete = { viewModel.handleEvent(InventoryListContract.Event.OnConfirmBulkDelete) },
+                    onMarkAsWasted = { viewModel.handleEvent(InventoryListContract.Event.OnMarkSelectedAsWasted) },
                     onExit = { viewModel.handleEvent(InventoryListContract.Event.OnExitBulkDeleteMode) },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )

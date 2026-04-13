@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SelectAll
+
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ fun BulkDeleteBar(
     isVisible: Boolean,
     onSelectAll: () -> Unit,
     onDelete: () -> Unit,
+    onMarkAsWasted: () -> Unit,
     onExit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -90,6 +92,20 @@ fun BulkDeleteBar(
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onErrorContainer
                     )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Bozuldu butonu
+                Button(
+                    onClick = onMarkAsWasted,
+                    enabled = selectedCount > 0,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary
+                    )
+                ) {
+                    Text("🤢 Bozuldu")
                 }
 
                 Spacer(modifier = Modifier.width(4.dp))

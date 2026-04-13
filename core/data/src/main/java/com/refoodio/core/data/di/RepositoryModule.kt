@@ -3,12 +3,14 @@ package com.refoodio.core.data.di
 import com.refoodio.core.data.repository.catalog.FoodCatalogRepositoryImpl
 import com.refoodio.core.data.repository.inventory.FoodRepositoryImpl
 import com.refoodio.core.data.repository.inventory.InventoryRepositoryImpl
+import com.refoodio.core.data.repository.inventory.WasteLogRepositoryImpl
 import com.refoodio.core.data.repository.receipt.ReceiptRepositoryImpl
 import com.refoodio.core.data.repository.recipe.RecipeRepositoryImpl
 import com.refoodio.core.data.repository.settings.SettingsRepositoryImpl
 import com.refoodio.core.domain.repository.FoodCatalogRepository
 import com.refoodio.core.domain.repository.FoodRepository
 import com.refoodio.core.domain.repository.InventoryRepository
+import com.refoodio.core.domain.repository.WasteLogRepository
 import com.refoodio.core.domain.repository.ReceiptRepository
 import com.refoodio.core.domain.repository.SettingsRepository
 import com.refoodio.core.domain.repository.recipe.RecipeRepository
@@ -56,4 +58,10 @@ abstract class RepositoryModule {
     abstract fun bindSettingsRepository(
         settingsRepositoryImpl: SettingsRepositoryImpl
     ): SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWasteLogRepository(
+        wasteLogRepositoryImpl: WasteLogRepositoryImpl
+    ): WasteLogRepository
 }

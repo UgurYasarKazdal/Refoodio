@@ -79,6 +79,10 @@ interface InventoryListContract {
         // Swipe to delete (tekil)
         data class OnSwipeDelete(val id: Int) : Event
         data object OnUndoDelete : Event
+        // İsraf kaydı
+        data object OnMarkSelectedAsWasted : Event
+        // Snackbar süresi doldu, geri alınmadı → varsa waste log yaz
+        data object OnDeleteConfirmed : Event
         // Toplu silme modu
         data class OnEnterBulkDeleteMode(val id: Int) : Event
         data class OnToggleDeleteSelect(val id: Int) : Event

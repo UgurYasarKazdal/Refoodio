@@ -8,6 +8,8 @@ import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.model.inventory.toFoodGroup
 import com.refoodio.core.domain.model.recipe.FoodCategory
+import com.refoodio.core.domain.model.inventory.WasteLog
+import com.refoodio.core.domain.use_case.inventory.InsertWasteLogUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcodeUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.UpdateInventoryUseCase
@@ -37,6 +39,7 @@ class InventoryViewModel @Inject constructor(
     private val getFoodByBarcode: GetFoodByBarcodeUseCase,
     private val insertInventory: InsertInventoryUseCase,
     private val updateInventory: UpdateInventoryUseCase,
+    private val insertWasteLog: InsertWasteLogUseCase,
     private val app: Application
 ) : ViewModel() {
 
@@ -51,6 +54,8 @@ class InventoryViewModel @Inject constructor(
 
     // Son silinen ürünler — undo için tutulur
     private var lastDeletedItems = mutableListOf<InventoryItem>()
+    // Son silme "bozuldu" kaynaklıysa true — snackbar geçince waste log yazılır
+    private var lastDeleteWasWaste = false
 
     init {
         loadInventories()
@@ -109,10 +114,38 @@ class InventoryViewModel @Inject constructor(
             }
 
             is InventoryListContract.Event.OnUndoDelete -> {
+                // Geri al — envantere geri koy, waste log yazılmaz (flag sıfırla)
                 lastDeletedItems.forEach { item ->
                     insertInventory(item).launchIn(viewModelScope)
                 }
                 lastDeletedItems.clear()
+                lastDeleteWasWaste = false
+            }
+
+            is InventoryListContract.Event.OnDeleteConfirmed -> {
+                // Snackbar geri alınmadan kapandı — bozuldu silinmesiyse waste log şimdi yaz
+                if (lastDeleteWasWaste) {
+                    val toLog = lastDeletedItems.toList()
+                    viewModelScope.launch {
+                        toLog.forEach { item ->
+                            insertWasteLog(WasteLog(name = item.name, quantity = item.quantity, unit = item.unit))
+                        }
+                    }
+                }
+                lastDeletedItems.clear()
+                lastDeleteWasWaste = false
+            }
+
+            is InventoryListContract.Event.OnMarkSelectedAsWasted -> {
+                // BulkDeleteBar'dan "Bozuldu" — önce sil, waste log snackbar geçince yazılacak
+                val idsToDelete = _state.value.deleteSelectedIds.toList()
+                if (idsToDelete.isEmpty()) return
+                val items = allItems.filter { idsToDelete.contains(it.id) }.map { it.originalItem }
+                lastDeletedItems = items.toMutableList()
+                lastDeleteWasWaste = true
+                val label = buildUndoLabel(items)
+                _state.update { it.copy(isInBulkDeleteMode = false, deleteSelectedIds = emptySet()) }
+                deleteItems(idsToDelete, undoLabel = label)
             }
 
             // ── Toplu silme modu ───────────────────────────────────────────
@@ -131,13 +164,25 @@ class InventoryViewModel @Inject constructor(
                         currentState.deleteSelectedIds - event.id
                     else
                         currentState.deleteSelectedIds + event.id
-                    currentState.copy(deleteSelectedIds = newIds)
+                    // Hiç seçim kalmadıysa modu kapat
+                    if (newIds.isEmpty()) {
+                        currentState.copy(isInBulkDeleteMode = false, deleteSelectedIds = emptySet())
+                    } else {
+                        currentState.copy(deleteSelectedIds = newIds)
+                    }
                 }
             }
 
             is InventoryListContract.Event.OnSelectAllForDelete -> {
                 val allIds = allItems.map { it.id }.toSet()
-                _state.update { it.copy(deleteSelectedIds = allIds) }
+                _state.update { currentState ->
+                    // Tümü zaten seçiliyse → seçimi kaldır ve modu kapat
+                    if (currentState.deleteSelectedIds == allIds) {
+                        currentState.copy(isInBulkDeleteMode = false, deleteSelectedIds = emptySet())
+                    } else {
+                        currentState.copy(deleteSelectedIds = allIds)
+                    }
+                }
             }
 
             is InventoryListContract.Event.OnExitBulkDeleteMode -> {

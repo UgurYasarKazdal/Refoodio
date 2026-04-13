@@ -4,7 +4,9 @@ import com.refoodio.core.domain.repository.FoodCatalogRepository
 import com.refoodio.core.domain.repository.FoodRepository
 import com.refoodio.core.domain.repository.InventoryRepository
 import com.refoodio.core.domain.repository.ReceiptRepository
+import com.refoodio.core.domain.repository.WasteLogRepository
 import com.refoodio.core.domain.use_case.catalog.GetFoodSuggestionsUseCase
+import com.refoodio.core.domain.use_case.inventory.InsertWasteLogUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.GetFoodByBarcodeUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InsertInventoryUseCase
 import com.refoodio.core.domain.use_case.inventory.addInventory.InventoryAddUseCases
@@ -75,4 +77,9 @@ object InventoryUseCaseModule {
         inventoryRepository: InventoryRepository,
         validateInventory: ValidateInventoryUseCase
     ): UpdateInventoryUseCase = UpdateInventoryUseCase(inventoryRepository, validateInventory)
+
+    @Provides
+    fun provideInsertWasteLogUseCase(
+        wasteLogRepository: WasteLogRepository
+    ): InsertWasteLogUseCase = InsertWasteLogUseCase(wasteLogRepository)
 }

@@ -22,3 +22,19 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         db.execSQL("ALTER TABLE inventory ADD COLUMN store_name TEXT")
     }
 }
+
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS waste_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                name TEXT NOT NULL,
+                quantity REAL NOT NULL,
+                unitId INTEGER NOT NULL,
+                wastedAt INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+    }
+}
