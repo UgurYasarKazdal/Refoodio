@@ -42,20 +42,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.inventory.presentation.inventory_list.InventoryListContract
+import kotlin.math.roundToInt
 
 /**
  * Tezgah ölçü seçimi bottom sheet.
- *
- * - COUNTABLE (PIECE, BUNCH, CUP, TABLESPOON, TEASPOON): stepper + preset bubbles
- * - LIQUID (LITER, MILLILITER): hızlı preset bubbles + stepper
- * - BULK (GRAM, KILOGRAM): oran butonları (¼ ½ Tamamı) + stepper
- * - PACK: sadece stepper (kaç paket)
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MeasurementBottomSheet(
     item: InventoryListContract.InventoryItemUiModel,
-    currentTezgahQuantity: Double?,          // null → tezgahta yok
+    currentTezgahQuantity: Double?,
     onTezgahAdd: (id: Int, quantity: Double) -> Unit,
     onRemoveFromTezgah: (id: Int) -> Unit,
     onDismiss: () -> Unit
@@ -63,9 +59,10 @@ fun MeasurementBottomSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val maxQty = item.originalItem.quantity
 
-    // Başlangıç miktarı: zaten tezgahtaysa onun miktarı, yoksa 1 adım
+    // Başlangıç miktarı: zaten tezgahtaysa onun miktarı, yoksa maxQty'nin %100'ü veya step
     var quantity by remember(item.id) {
-        mutableDoubleStateOf(currentTezgahQuantity ?: item.unit.step.coerceAtMost(maxQty))
+        val initial = currentTezgahQuantity ?: (if (item.unit == FoodUnit.KILOGRAM || item.unit == FoodUnit.LITER) maxQty else item.unit.step.coerceAtMost(maxQty))
+        mutableDoubleStateOf(initial)
     }
 
     val unitName = stringResource(item.unit.shortNameResId)
@@ -83,7 +80,7 @@ fun MeasurementBottomSheet(
                 .padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── Başlık ─────────────────────────────────────────────────────
+            // Başlık
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -96,7 +93,7 @@ fun MeasurementBottomSheet(
                         maxLines = 1
                     )
                     Text(
-                        text = "Stok: ${"%.1f".format(maxQty)} $unitName",
+                        text = "Stok: ${"%.2f".format(maxQty)} $unitName",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -107,7 +104,7 @@ fun MeasurementBottomSheet(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
-                            text = "Tezgahta: ${"%.1f".format(currentTezgahQuantity)} $unitName",
+                            text = "Tezgahta: ${"%.2f".format(currentTezgahQuantity)} $unitName",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -118,10 +115,9 @@ fun MeasurementBottomSheet(
 
             HorizontalDivider()
 
-            // ── Kontrol alanı ───────────────────────────────────────────────
+            // Kontrol alanı
             when (controlType) {
                 TezgahControlType.COUNTABLE -> {
-                    // Hızlı preset bubbles
                     val presets = buildCountablePresets(maxQty, item.unit)
                     if (presets.isNotEmpty()) {
                         FlowRow(
@@ -151,7 +147,6 @@ fun MeasurementBottomSheet(
                 }
 
                 TezgahControlType.LIQUID -> {
-                    // Preset miktar bubbles
                     val presets = buildLiquidPresets(item.unit, maxQty)
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -172,16 +167,21 @@ fun MeasurementBottomSheet(
                     }
                     StepperRow(
                         quantity = quantity,
-                        step = item.unit.step,
+                        step = if (item.unit == FoodUnit.LITER) 0.1 else item.unit.step,
                         maxQty = maxQty,
                         unitName = unitName,
-                        onDecrease = { quantity = (quantity - item.unit.step).coerceAtLeast(item.unit.step) },
-                        onIncrease = { quantity = (quantity + item.unit.step).coerceAtMost(maxQty) }
+                        onDecrease = { 
+                            val s = if (item.unit == FoodUnit.LITER) 0.1 else item.unit.step
+                            quantity = (quantity - s).coerceAtLeast(s) 
+                        },
+                        onIncrease = { 
+                            val s = if (item.unit == FoodUnit.LITER) 0.1 else item.unit.step
+                            quantity = (quantity + s).coerceAtMost(maxQty) 
+                        }
                     )
                 }
 
                 TezgahControlType.BULK -> {
-                    // Oran butonları
                     val ratios = listOf(
                         "¼" to 0.25,
                         "½" to 0.5,
@@ -194,11 +194,17 @@ fun MeasurementBottomSheet(
                     ) {
                         ratios.forEach { (label, ratio) ->
                             val target = (maxQty * ratio).let {
-                                // Round to nearest step
-                                val steps = (it / item.unit.step).toLong()
-                                (steps * item.unit.step).coerceIn(item.unit.step, maxOf(item.unit.step, maxQty))
+                                if (item.unit == FoodUnit.KILOGRAM) {
+                                    // 0.01 hassasiyetle yuvarla (10 gramlık adımlar)
+                                    (it * 100).roundToInt() / 100.0
+                                } else {
+                                    val steps = (it / item.unit.step).roundToInt()
+                                    (steps * item.unit.step)
+                                }.coerceIn(0.01, maxQty)
                             }
-                            val isActive = quantity == target
+                            
+                            val isActive = "%.2f".format(quantity) == "%.2f".format(target)
+                            
                             if (isActive) {
                                 Button(
                                     onClick = { },
@@ -214,16 +220,21 @@ fun MeasurementBottomSheet(
                     }
                     StepperRow(
                         quantity = quantity,
-                        step = item.unit.step,
+                        step = if (item.unit == FoodUnit.KILOGRAM) 0.05 else item.unit.step,
                         maxQty = maxQty,
                         unitName = unitName,
-                        onDecrease = { quantity = (quantity - item.unit.step).coerceAtLeast(item.unit.step) },
-                        onIncrease = { quantity = (quantity + item.unit.step).coerceAtMost(maxQty) }
+                        onDecrease = { 
+                            val s = if (item.unit == FoodUnit.KILOGRAM) 0.05 else item.unit.step
+                            quantity = (quantity - s).coerceAtLeast(s) 
+                        },
+                        onIncrease = { 
+                            val s = if (item.unit == FoodUnit.KILOGRAM) 0.05 else item.unit.step
+                            quantity = (quantity + s).coerceAtMost(maxQty) 
+                        }
                     )
                 }
 
                 TezgahControlType.PACK -> {
-                    // Sadece stepper — kaç paket
                     StepperRow(
                         quantity = quantity,
                         step = item.unit.step,
@@ -237,12 +248,11 @@ fun MeasurementBottomSheet(
 
             HorizontalDivider()
 
-            // ── Aksiyonlar ─────────────────────────────────────────────────
+            // Aksiyonlar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Tezgahtan çıkar (sadece zaten eklenmişse)
                 if (currentTezgahQuantity != null) {
                     OutlinedButton(
                         onClick = {
@@ -258,7 +268,6 @@ fun MeasurementBottomSheet(
                     }
                 }
 
-                // Hepsini Kullan — tam miktarla ekle
                 FilledTonalButton(
                     onClick = {
                         onTezgahAdd(item.id, maxQty)
@@ -269,7 +278,6 @@ fun MeasurementBottomSheet(
                     Text("Hepsini Kullan")
                 }
 
-                // Belirtilen miktarı ekle
                 Button(
                     onClick = {
                         onTezgahAdd(item.id, quantity)
@@ -300,7 +308,7 @@ private fun StepperRow(
     ) {
         FilledTonalIconButton(
             onClick = onDecrease,
-            enabled = quantity > step,
+            enabled = quantity > 0.01,
             modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Default.Remove, contentDescription = "Azalt")
@@ -310,7 +318,7 @@ private fun StepperRow(
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "%.1f".format(quantity),
+                text = if (quantity >= 1.0) "%.2f".format(quantity) else "%.3f".format(quantity).trimEnd('0').trimEnd('.'),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
