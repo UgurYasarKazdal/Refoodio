@@ -196,7 +196,7 @@ fun MeasurementBottomSheet(
                             val target = (maxQty * ratio).let {
                                 // Round to nearest step
                                 val steps = (it / item.unit.step).toLong()
-                                (steps * item.unit.step).coerceIn(item.unit.step, maxQty)
+                                (steps * item.unit.step).coerceIn(item.unit.step, maxOf(item.unit.step, maxQty))
                             }
                             val isActive = quantity == target
                             if (isActive) {
@@ -266,30 +266,23 @@ fun MeasurementBottomSheet(
                     },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Tamamı")
+                    Text("Hepsini Kullan")
                 }
 
-                // Tezgaha At — seçilen miktar
+                // Belirtilen miktarı ekle
                 Button(
                     onClick = {
-                        if (quantity > 0.0) {
-                            onTezgahAdd(item.id, quantity)
-                            onDismiss()
-                        }
+                        onTezgahAdd(item.id, quantity)
+                        onDismiss()
                     },
-                    modifier = Modifier.weight(if (currentTezgahQuantity != null) 1f else 2f),
-                    enabled = quantity > 0.0
+                    modifier = Modifier.weight(1.2f)
                 ) {
-                    Text("Tezgaha At")
+                    Text(if (currentTezgahQuantity == null) "Tezgaha Ekle" else "Güncelle")
                 }
             }
-
-            Spacer(Modifier.height(4.dp))
         }
     }
 }
-
-// ── Stepper satırı ────────────────────────────────────────────────────────────
 
 @Composable
 private fun StepperRow(
@@ -302,18 +295,18 @@ private fun StepperRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
         FilledTonalIconButton(
             onClick = onDecrease,
             enabled = quantity > step,
-            modifier = Modifier.size(44.dp)
+            modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Default.Remove, contentDescription = "Azalt")
         }
 
-        Spacer(Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(24.dp))
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -328,56 +321,40 @@ private fun StepperRow(
             )
         }
 
-        Spacer(Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(24.dp))
 
         FilledTonalIconButton(
             onClick = onIncrease,
             enabled = quantity < maxQty,
-            modifier = Modifier.size(44.dp)
+            modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = "Artır")
         }
     }
 }
 
-// ── Kontrol tipi ──────────────────────────────────────────────────────────────
-
-private enum class TezgahControlType { COUNTABLE, LIQUID, BULK, PACK }
-
-private fun FoodUnit.tezgahControlType(): TezgahControlType = when (this) {
-    FoodUnit.PIECE, FoodUnit.BUNCH, FoodUnit.CUP,
-    FoodUnit.TABLESPOON, FoodUnit.TEASPOON -> TezgahControlType.COUNTABLE
-    FoodUnit.LITER, FoodUnit.MILLILITER    -> TezgahControlType.LIQUID
-    FoodUnit.GRAM, FoodUnit.KILOGRAM       -> TezgahControlType.BULK
-    FoodUnit.PACK                          -> TezgahControlType.PACK
+private enum class TezgahControlType {
+    COUNTABLE, LIQUID, BULK, PACK
 }
 
-// ── Preset yardımcıları ───────────────────────────────────────────────────────
+private fun FoodUnit.tezgahControlType(): TezgahControlType {
+    return when (this) {
+        FoodUnit.PIECE, FoodUnit.BUNCH, FoodUnit.CUP, FoodUnit.TABLESPOON, FoodUnit.TEASPOON -> TezgahControlType.COUNTABLE
+        FoodUnit.LITER, FoodUnit.MILLILITER -> TezgahControlType.LIQUID
+        FoodUnit.GRAM, FoodUnit.KILOGRAM -> TezgahControlType.BULK
+        FoodUnit.PACK -> TezgahControlType.PACK
+    }
+}
 
 private fun buildCountablePresets(maxQty: Double, unit: FoodUnit): List<Double> {
-    val candidates = when (unit) {
-        FoodUnit.CUP, FoodUnit.TABLESPOON, FoodUnit.TEASPOON ->
-            listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-        else ->
-            listOf(1.0, 2.0, 3.0, 5.0, 10.0)
-    }
-    return candidates.filter { it <= maxQty }
+    val options = listOf(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 10.0, 12.0)
+    return options.filter { it <= maxQty && it >= unit.step }
 }
 
 private fun buildLiquidPresets(unit: FoodUnit, maxQty: Double): List<Pair<String, Double>> {
-    return when (unit) {
-        FoodUnit.MILLILITER -> listOf(
-            "50 ml" to 50.0,
-            "100 ml" to 100.0,
-            "200 ml" to 200.0,
-            "500 ml" to 500.0,
-            "1 L" to 1000.0
-        )
-        else -> listOf( // LITER
-            "0.25 L" to 0.25,
-            "0.5 L" to 0.5,
-            "1 L" to 1.0,
-            "2 L" to 2.0
-        )
-    }.filter { it.second <= maxQty + 0.001 }
+    return if (unit == FoodUnit.LITER) {
+        listOf("250ml" to 0.25, "500ml" to 0.5, "1L" to 1.0, "1.5L" to 1.5, "2L" to 2.0)
+    } else {
+        listOf("100ml" to 100.0, "200ml" to 200.0, "250ml" to 250.0, "500ml" to 500.0)
+    }.filter { it.second <= maxQty }
 }

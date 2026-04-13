@@ -23,7 +23,7 @@ class ReceiptRepositoryImpl @Inject constructor(
 ) : ReceiptRepository {
 
     companion object {
-        private val MODELS = listOf("gemini-3-flash-preview","gemini-2.0-flash", "gemini-2.0-flash-lite")
+        private val MODELS = listOf("gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash")
         private const val MAX_RETRIES = 2
         private const val RETRY_DELAY_MS = 5_000L
         private const val TAG = "ReceiptRepository"
@@ -34,19 +34,20 @@ class ReceiptRepositoryImpl @Inject constructor(
         val base64Image = Base64.encodeToString(compressedBytes, Base64.NO_WRAP)
         val request = buildRequest(base64Image)
 
-        //BİR GEMİNİ MODELİ BAŞARISIZ OLUNCA DİĞER MODELLERİ DENEME DÖNGÜSÜ
-      //  for (model in MODELS) {
-            val result = attemptWithRetry(MODELS[0], request)
+        // BİR GEMİNİ MODELİ BAŞARISIZ OLUNCA DİĞER MODELLERİ DENEME DÖNGÜSÜ
+        for (model in MODELS) {
+            val result = attemptWithRetry(model, request)
             if (result.isSuccess) return result
+            
             val error = result.exceptionOrNull()
             if (error is ApiException && error.isFatal) {
-                // Kurtarılamaz hata, devam etme
+                // Kurtarılamaz hata (örn: geçersiz API anahtarı), devam etme
                 return result
             }
-            Log.w(TAG, "Model $MODELS[0] başarısız, sıradaki deneniyor: ${error?.message}")
-        //}
+            Log.w(TAG, "Model $model başarısız, sıradaki deneniyor: ${error?.message}")
+        }
 
-        return Result.failure(Exception("Tüm modeller yanıt vermedi. Lütfen tekrar deneyin."))
+        return Result.failure(Exception("Tüm modeller yanıt vermedi. Lütfen internet bağlantınızı ve API anahtarınızı kontrol edin."))
     }
 
     private suspend fun attemptWithRetry(model: String, request: GeminiRequest): Result<List<InventoryItem>> {
@@ -58,17 +59,20 @@ class ReceiptRepositoryImpl @Inject constructor(
                     request = request
                 )
                 return Result.success(parseReceiptResponse(response))
-            } catch (e: ApiException) {
-                if (e.isRetryable) {
+            } catch (e: Exception) {
+                // ApiException ise ve tekrar denenebilirse bekle
+                if (e is ApiException && e.isRetryable) {
                     val waitMs = RETRY_DELAY_MS * (attempt + 1)
                     Log.w(TAG, "[$model] ${e.code} hatası, ${waitMs}ms beklenip tekrar denenecek (${attempt + 1}/$MAX_RETRIES)")
                     delay(waitMs)
-                } else {
+                } else if (e is ApiException) {
+                    // Tekrar denenemez bir API hatası (Fatal)
                     return Result.failure(e)
+                } else {
+                    // Bilinmeyen bir exception (Network vb)
+                    if (attempt == MAX_RETRIES - 1) return Result.failure(e)
+                    delay(RETRY_DELAY_MS)
                 }
-            } catch (e: Exception) {
-                if (attempt == MAX_RETRIES - 1) return Result.failure(e)
-                delay(RETRY_DELAY_MS)
             }
         }
         return Result.failure(Exception("[$model] $MAX_RETRIES denemede yanıt alınamadı."))
@@ -110,7 +114,7 @@ class ReceiptRepositoryImpl @Inject constructor(
         [
           {
             "name": "Ürün adı (Türkçe, kısa ve anlaşılır — paket/kutu/şişe gibi ambalaj ifadelerini isme ekleme)",
-            "quantity": <sayısal miktar, double — aşağıdaki miktar kurallarına göre belirle>,
+            "quantity": <sayısal miktar, double>,
             "unit": "<GRAM|KILOGRAM|LITER|MILLILITER|PIECE|BUNCH|PACK>",
             "category": "<DAIRY|VEGETABLE|FRUIT|MEAT_POULTRY|SEAFOOD|DELI|STAPLE_FOOD|GRAINS|LEGUMES|BAKERY|PASTRY|OIL|SAUCE|VINEGAR|SPICE|SEEDS|BREAKFAST|BEVERAGE|CANNED|NUTS|FERMENTED|SWEETENER|OTHER>",
             "shelfLifeDays": <tahmini raf ömrü gün cinsinden, integer>,
@@ -119,7 +123,7 @@ class ReceiptRepositoryImpl @Inject constructor(
           }
         ]
 
-        MİKTAR VE BİRİM KURALLARI — ÇOK ÖNEMLİ:
+    MİKTAR VE BİRİM KURALLARI — ÇOK ÖNEMLİ:
         Hedef: Kullanıcının mutfakta düşündüğü birimde kaydet, satın alma biriminde değil.
 
         1. Ürün adında ADET/KAÇ'LI bilgisi varsa → PIECE kullan, adedi quantity yap:
