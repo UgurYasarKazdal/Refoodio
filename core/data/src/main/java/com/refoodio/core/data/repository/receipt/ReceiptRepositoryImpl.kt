@@ -23,7 +23,7 @@ class ReceiptRepositoryImpl @Inject constructor(
 ) : ReceiptRepository {
 
     companion object {
-        private val MODELS = listOf("gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash")
+        private val MODELS = listOf("gemini-3-flash-preview")
         private const val MAX_RETRIES = 2
         private const val RETRY_DELAY_MS = 5_000L
         private const val TAG = "ReceiptRepository"
