@@ -22,6 +22,8 @@
     <string name="unit_cup_short">bardak</string>
     <string name="unit_tbsp_short">Y.K.</string>
     <string name="unit_tsp_short">T.K.</string>
+    <string name="unit_chay_short">Ç.K.</string>
+    <string name="unit_chay_full">Çay Kaşığı</string>
 
     <string name="cat_dairy">Süt Ürünleri</string>
     <string name="cat_vegetable">Sebze</string>
@@ -52,4 +54,5 @@
     <string name="section_dairy">Süt Ürünleri</string>
     <string name="section_pantry">Kiler &amp; Temel Gıda</string>
     <string name="section_other">Diğer</string>
+
 </resources>

@@ -22,6 +22,8 @@
     <string name="unit_cup_short">cup</string>
     <string name="unit_tbsp_short">tbsp</string>
     <string name="unit_tsp_short">tsp</string>
+    <string name="unit_chay_short">Teasp</string>
+    <string name="unit_chay_full">Tea spoon</string>
 
     <string name="cat_dairy">Dairy Products</string>
     <string name="cat_vegetable">Vegetable</string>
@@ -52,4 +54,5 @@
     <string name="section_dairy">Dairy</string>
     <string name="section_pantry">Pantry &amp; Staple Food</string>
     <string name="section_other">Other</string>
+
 </resources>
