@@ -10,9 +10,9 @@ import com.refoodio.core.data.repository.settings.SettingsRepositoryImpl
 import com.refoodio.core.domain.repository.FoodCatalogRepository
 import com.refoodio.core.domain.repository.FoodRepository
 import com.refoodio.core.domain.repository.InventoryRepository
-import com.refoodio.core.domain.repository.WasteLogRepository
 import com.refoodio.core.domain.repository.ReceiptRepository
 import com.refoodio.core.domain.repository.SettingsRepository
+import com.refoodio.core.domain.repository.WasteLogRepository
 import com.refoodio.core.domain.repository.recipe.RecipeRepository
 import dagger.Binds
 import dagger.Module

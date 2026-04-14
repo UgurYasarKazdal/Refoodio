@@ -13,7 +13,7 @@ class InsertInventoryUseCase(
     private val repository: InventoryRepository,
     private val validateInventory: ValidateInventoryUseCase
 ) {
-    operator fun invoke(inventoryItem: InventoryItem): Flow<InventoryResource<Unit>> = flow {
+    operator fun invoke(inventoryItem: InventoryItem): Flow<InventoryResource<Long>> = flow {
         val validation = validateInventory.execute(inventoryItem)
 
         if (!validation.successful) {

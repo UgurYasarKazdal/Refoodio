@@ -11,5 +11,6 @@ data class ReceiptItemDto(
     val category: String,
     @SerialName("shelfLifeDays") val shelfLifeDays: Int = 7,
     val price: Double? = null,
-    @SerialName("storeName") val storeName: String? = null
+    @SerialName("storeName") val storeName: String? = null,
+    val sideUnits: List<Int> = emptyList()
 )

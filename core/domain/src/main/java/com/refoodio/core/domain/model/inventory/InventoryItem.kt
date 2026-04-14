@@ -11,7 +11,9 @@ data class InventoryItem(
     val unit: FoodUnit,
     val category: FoodCategory,
     val price: Double? = null,
-    val storeName: String? = null
+    val storeName: String? = null,
+    // Gemini'nin önerdiği tüketim birimleri — boşsa MeasurementBottomSheet FoodUnit mantığını kullanır
+    val sideUnits: List<FoodUnit> = emptyList()
 ) {
     fun isNearExpiry(): Boolean {
         val threeDaysInMillis = 3.daysToMillis

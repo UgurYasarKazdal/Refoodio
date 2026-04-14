@@ -12,7 +12,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface InventoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertInventory(inventoryItem: InventoryEntity)
+    suspend fun insertInventory(inventoryItem: InventoryEntity): Long
+
+    @Query("UPDATE inventory SET side_units = :sideUnits WHERE id = :id")
+    suspend fun updateSideUnits(id: Int, sideUnits: String)
 
     @Update
     suspend fun updateInventory(inventoryItem: InventoryEntity)

@@ -119,7 +119,8 @@ class ReceiptRepositoryImpl @Inject constructor(
             "category": "<DAIRY|VEGETABLE|FRUIT|MEAT_POULTRY|SEAFOOD|DELI|STAPLE_FOOD|GRAINS|LEGUMES|BAKERY|PASTRY|OIL|SAUCE|VINEGAR|SPICE|SEEDS|BREAKFAST|BEVERAGE|CANNED|NUTS|FERMENTED|SWEETENER|OTHER>",
             "shelfLifeDays": <tahmini raf ömrü gün cinsinden, integer>,
             "price": <ürünün satır fiyatı TL cinsinden, double, fişte yoksa null>,
-            "storeName": "<fişin üstündeki market adı, tüm ürünler için aynı, okunamazsa null>"
+            "storeName": "<fişin üstündeki market adı, tüm ürünler için aynı, okunamazsa null>",
+            "sideUnits": [<bu ürünü tüketirken kullanılan ölçü birimi ID'leri, en fazla 4, en sık kullanılan önce>]
           }
         ]
 
@@ -154,6 +155,25 @@ class ReceiptRepositoryImpl @Inject constructor(
            - "Muz 800g"            → quantity: 800,  unit: GRAM
 
         6. Hiçbir miktar bilgisi çıkarılamıyorsa → PACK kullan, quantity: 1
+
+        SIDE UNITS (YAN BİRİMLER) KURALLARI:
+        sideUnits alanına bu ürünün mutfakta tüketilirken kullanılan ölçü birimlerinin ID'lerini yaz.
+        Stok birimi (unit alanındaki) her zaman listeye gir. Gerçekten kullanılan birimleri seç, en fazla 4 tane.
+
+        Desteklenen birim ID'leri:
+        1=Gram, 2=Kilogram, 3=Litre, 4=Mililitre, 5=Adet, 6=Demet, 7=Paket,
+        8=Su Bardağı, 9=Yemek Kaşığı, 10=Tatlı Kaşığı, 11=Çay Kaşığı
+
+        Örnekler:
+        - Muz (unit: KILOGRAM)   → sideUnits: [5, 2]          (adet ve kg ile tüketilir)
+        - Hurma (unit: KILOGRAM) → sideUnits: [5, 1]          (adet ve gram ile tüketilir)
+        - Zeytinyağı (unit: LITER) → sideUnits: [9, 10, 3]   (yemek kaşığı, tatlı kaşığı, litre)
+        - Labne (unit: PACK)     → sideUnits: [9, 10, 7]      (yemek kaşığı, tatlı kaşığı, paket)
+        - Kahve (unit: PACK)     → sideUnits: [10, 11, 7]     (tatlı kaşığı, çay kaşığı, paket)
+        - Marul (unit: PIECE)    → sideUnits: [5]             (adet)
+        - Tuz (unit: GRAM)       → sideUnits: [10, 11, 1]     (tatlı kaşığı, çay kaşığı, gram)
+        - Yumurta (unit: PIECE)  → sideUnits: [5]             (adet)
+        - Süt (unit: LITER)      → sideUnits: [8, 4, 3]       (bardak, mililitre, litre)
 
         DİĞER KURALLAR:
         - Ürün adını kısa tut. "20'li", "500g", "1L" gibi miktar ifadelerini isme ekleme, zaten quantity/unit alanlarına giriyor.

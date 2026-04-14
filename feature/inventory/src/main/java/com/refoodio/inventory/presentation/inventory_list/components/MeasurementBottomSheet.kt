@@ -75,14 +75,35 @@ fun MeasurementBottomSheet(
     val displayUnitName = stringResource(selectedDisplayUnit.shortNameResId)
 
     // Akıllı Tüketim Seçenekleri
+    // Önce DB kolonuna bak (Gemini önerileri). Doluysa onları kullan, boşsa FoodUnit mantığı.
     val consumptionUnitOptions = remember(item) {
+        val sideUnits = item.originalItem.sideUnits
+        if (sideUnits.isNotEmpty()) {
+            // Ana birim her zaman ilk sırada — Gemini'nin listesinde olmasa bile
+            val opts = mutableListOf(item.unit)
+            sideUnits.filter { it != item.unit }.forEach { opts.add(it) }
+            return@remember opts.distinct()
+        }
+
+        // Fallback: kategori+birim tipine göre algoritmik seçenekler
         val options = mutableListOf(item.unit)
+        val cat = item.originalItem.category
         when (item.unit.type) {
             FoodUnit.UnitType.WEIGHT -> {
                 if (item.unit == FoodUnit.KILOGRAM) options.add(FoodUnit.GRAM)
-                
-                // Kaşık seçenekleri sadece toz/taneli akışkan kategorilerde
-                if (item.originalItem.category in listOf(FoodCategory.SPICE, FoodCategory.SAUCE, FoodCategory.STAPLE_FOOD, FoodCategory.OIL, FoodCategory.SWEETENER)) {
+
+                // Muz, elma, domates gibi kg/gram cinsinden kayıtlı meyve/sebze → adet seçeneği
+                if (cat in listOf(FoodCategory.FRUIT, FoodCategory.VEGETABLE)) {
+                    options.add(FoodUnit.PIECE)
+                }
+
+                // Toz/taneli/sıvı kategoriler → kaşık seçenekleri
+                if (cat in listOf(
+                        FoodCategory.SPICE, FoodCategory.SAUCE, FoodCategory.STAPLE_FOOD,
+                        FoodCategory.OIL, FoodCategory.SWEETENER, FoodCategory.GRAINS,
+                        FoodCategory.SEEDS
+                    )
+                ) {
                     options.addAll(listOf(FoodUnit.TABLESPOON, FoodUnit.TEASPOON, FoodUnit.TEA_SPOON))
                 }
             }
@@ -91,8 +112,14 @@ fun MeasurementBottomSheet(
                 options.addAll(listOf(FoodUnit.TABLESPOON, FoodUnit.TEASPOON, FoodUnit.TEA_SPOON))
             }
             FoodUnit.UnitType.COUNTABLE -> {
-                // Sadece Paket ürünlerde (Kahve paketi gibi) kaşık desteği verelim
-                if (item.unit == FoodUnit.PACK && item.originalItem.category in listOf(FoodCategory.BEVERAGE, FoodCategory.STAPLE_FOOD)) {
+                if (item.unit == FoodUnit.PACK && cat in listOf(
+                        FoodCategory.BEVERAGE, FoodCategory.STAPLE_FOOD,
+                        // Labne, krem peynir, yoğurt poşeti gibi süt ürünleri paketi → kaşık
+                        FoodCategory.DAIRY,
+                        // Çay, kahve, kakao paketi → kaşık
+                        FoodCategory.GRAINS, FoodCategory.SEEDS
+                    )
+                ) {
                     options.addAll(listOf(FoodUnit.TABLESPOON, FoodUnit.TEASPOON, FoodUnit.TEA_SPOON))
                 }
             }
@@ -180,7 +207,14 @@ fun MeasurementBottomSheet(
             }
 
             // Kontrol alanı
-            val controlType = if (selectedDisplayUnit != item.unit) TezgahControlType.COUNTABLE else item.unit.tezgahControlType()
+            // Meyve/sebze → PIECE → oran butonları (avokado ½, marul ¼ gibi)
+            val controlType = when {
+                selectedDisplayUnit != item.unit -> TezgahControlType.COUNTABLE
+                item.unit == FoodUnit.PIECE && item.originalItem.category in listOf(
+                    FoodCategory.FRUIT, FoodCategory.VEGETABLE
+                ) -> TezgahControlType.BULK
+                else -> item.unit.tezgahControlType()
+            }
 
             when (controlType) {
                 TezgahControlType.COUNTABLE -> {
@@ -193,12 +227,16 @@ fun MeasurementBottomSheet(
                                 FoodUnit.TABLESPOON -> 15.0
                                 FoodUnit.TEASPOON -> 5.0
                                 FoodUnit.TEA_SPOON -> 2.5
+                                // ~100g / adet varsayılan (meyve/sebze)
+                                FoodUnit.PIECE -> 100.0
                                 else -> 1.0
                             }
                             item.unit == FoodUnit.KILOGRAM -> when(selectedDisplayUnit) {
                                 FoodUnit.TABLESPOON -> 0.015
                                 FoodUnit.TEASPOON -> 0.005
                                 FoodUnit.TEA_SPOON -> 0.0025
+                                // ~100g = 0.1 kg / adet varsayılan (muz, elma...)
+                                FoodUnit.PIECE -> 0.1
                                 else -> 0.01
                             }
                             item.unit == FoodUnit.LITER -> when(selectedDisplayUnit) {

@@ -222,32 +222,38 @@ class InventoryAddViewModel @Inject constructor(
             category = currentState.form.category,
         )
 
-        val operation = if (currentState.isEditMode) {
-            inventoryAddUseCases.updateInventory(item)
+        if (currentState.isEditMode) {
+            // Güncelleme — side_units zaten mevcut, yeniden çekmiyoruz
+            inventoryAddUseCases.updateInventory(item).onEach { result ->
+                when (result) {
+                    is Resource.Loading -> _state.update { it.copy(isLoading = true) }
+                    is Resource.Success -> onSaveSuccess()
+                    is Resource.Error -> _state.update { it.copy(isLoading = false) }
+                }
+            }.launchIn(viewModelScope)
         } else {
-            inventoryAddUseCases.insertInventory(item)
-        }
-
-        operation.onEach { result ->
-            when (result) {
-                is Resource.Loading -> _state.update { it.copy(isLoading = true) }
-
-                is Resource.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            form = InventoryAddContract.InventoryForm(),
-                            suggestions = emptyList(),
-                            errorMessage = null
-                        )
+            // Yeni kayıt — başarı sonrası arka planda Gemini'den yan birim önerileri alınır
+            inventoryAddUseCases.insertInventory(item).onEach { result ->
+                when (result) {
+                    is Resource.Loading -> _state.update { it.copy(isLoading = true) }
+                    is Resource.Success -> {
+                        onSaveSuccess()
                     }
-                    _effect.send(InventoryAddContract.SideEffect.NavigateBack)
+                    is Resource.Error -> _state.update { it.copy(isLoading = false) }
                 }
+            }.launchIn(viewModelScope)
+        }
+    }
 
-                is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false) }
-                }
-            }
-        }.launchIn(viewModelScope)
+    private suspend fun onSaveSuccess() {
+        _state.update {
+            it.copy(
+                isLoading = false,
+                form = InventoryAddContract.InventoryForm(),
+                suggestions = emptyList(),
+                errorMessage = null
+            )
+        }
+        _effect.send(InventoryAddContract.SideEffect.NavigateBack)
     }
 }

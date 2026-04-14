@@ -15,5 +15,7 @@ data class InventoryEntity(
     @ColumnInfo(name = "unit_id") val unit: FoodUnit,
     @ColumnInfo(name = "category_id") val category: FoodCategory,
     val price: Double? = null,
-    @ColumnInfo(name = "store_name") val storeName: String? = null
+    @ColumnInfo(name = "store_name") val storeName: String? = null,
+    // Virgülle ayrılmış FoodUnit ID'leri — Gemini'nin önerdiği tüketim birimleri
+    @ColumnInfo(name = "side_units") val sideUnits: String = ""
 )

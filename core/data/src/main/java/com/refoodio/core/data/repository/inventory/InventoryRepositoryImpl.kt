@@ -3,6 +3,7 @@ package com.refoodio.core.data.repository.inventory
 import com.refoodio.core.data.mapper.inventory.toDomain
 import com.refoodio.core.data.mapper.inventory.toEntity
 import com.refoodio.core.database.dao.inventory.InventoryDao
+import com.refoodio.core.domain.model.inventory.FoodUnit
 import com.refoodio.core.domain.model.inventory.InventoryItem
 import com.refoodio.core.domain.repository.InventoryRepository
 import kotlinx.coroutines.Dispatchers
@@ -22,9 +23,15 @@ class InventoryRepositoryImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun addInventory(inventoryItem: InventoryItem) {
-        withContext(Dispatchers.IO) {
+    override suspend fun addInventory(inventoryItem: InventoryItem): Long {
+        return withContext(Dispatchers.IO) {
             inventoryDao.insertInventory(inventoryItem.toEntity())
+        }
+    }
+
+    override suspend fun updateSideUnits(id: Int, sideUnits: List<FoodUnit>) {
+        withContext(Dispatchers.IO) {
+            inventoryDao.updateSideUnits(id, sideUnits.joinToString(",") { it.id.toString() })
         }
     }
 

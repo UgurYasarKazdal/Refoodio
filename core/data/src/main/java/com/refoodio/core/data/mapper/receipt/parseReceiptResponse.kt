@@ -32,6 +32,10 @@ fun parseReceiptResponse(response: GeminiResponse): List<InventoryItem> {
 
         val expiryDate = System.currentTimeMillis() + dto.shelfLifeDays.daysToMillis
 
+        val sideUnits = dto.sideUnits.mapNotNull { id ->
+            FoodUnit.entries.find { it.id == id }
+        }.distinct()
+
         InventoryItem(
             name = dto.name,
             expiryDate = expiryDate,
@@ -39,7 +43,8 @@ fun parseReceiptResponse(response: GeminiResponse): List<InventoryItem> {
             unit = unit,
             category = category,
             price = dto.price,
-            storeName = dto.storeName
+            storeName = dto.storeName,
+            sideUnits = sideUnits
         )
     }
 }

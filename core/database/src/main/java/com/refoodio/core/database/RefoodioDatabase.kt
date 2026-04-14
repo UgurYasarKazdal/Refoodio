@@ -22,7 +22,7 @@ import com.refoodio.core.database.entity.waste.WasteLogEntity
         FoodCatalogFtsEntity::class,
         WasteLogEntity::class
     ],
-    version = 6
+    version = 7
 )
 @TypeConverters(
     StringListTypeConverter::class, FoodUnitConverter::class, FoodCategoryConverter::class
